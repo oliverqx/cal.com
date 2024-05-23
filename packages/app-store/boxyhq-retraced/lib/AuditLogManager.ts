@@ -1,28 +1,22 @@
-import { getGenericAuditLogClient } from "@calcom/features/audit-logs/lib/getGenericAuditLogClient";
-import type {
-  AuditLogEvent,
-  AuditLogsManager,
-  GenericAuditLogClient,
-} from "@calcom/features/audit-logs/types";
+import * as Retraced from "@retracedhq/retraced";
+
+import type { AppKeys } from "@calcom/app-store/boxyhq-retraced/zod";
+import type { AuditLogEvent, AuditLogsManager } from "@calcom/features/audit-logs/types";
 import logger from "@calcom/lib/logger";
 
-import config from "../config.json";
-import type { AppKeys } from "../zod";
+const log = logger.getSubLogger({ prefix: ["AuditLogManager"] });
 
-const log = logger.getSubLogger({ prefix: ["AuditLogManager", config.slug] });
-export default class GenericAuditLogManager implements AuditLogsManager {
-  private client: undefined | GenericAuditLogClient;
-
+export default class BoxyHQAuditLogManager implements AuditLogsManager {
+  private client: undefined | Retraced.Client;
   constructor(appKeys: AppKeys) {
-    log.silly("Initializing GenericAuditLogManager");
-
-    // This is where your audit log client goes. Should be edited.
-    this.client = getGenericAuditLogClient(appKeys.apiKey, appKeys.projectId, appKeys.endpoint);
+    log.silly("Initializing BoxyHQAuditLogManager");
+    this.client = new Retraced.Client({
+      apiKey: appKeys.apiKey,
+      projectId: appKeys.projectId,
+    });
   }
 
   public async reportEvent(event: AuditLogEvent) {
-    log.silly("Reporting event.");
-    // Here you can intercept the event before its sent by your client.
-    this.client?.reportEvent(event);
+    await this.client?.reportEvent({ ...event, target: { id: "" } });
   }
 }
