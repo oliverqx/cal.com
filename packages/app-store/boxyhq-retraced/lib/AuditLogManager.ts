@@ -7,7 +7,7 @@ import logger from "@calcom/lib/logger";
 const log = logger.getSubLogger({ prefix: ["AuditLogManager"] });
 
 export default class BoxyHQAuditLogManager implements AuditLogsManager {
-  private client: undefined | Retraced.Client;
+  public client: undefined | Retraced.Client;
   constructor(appKeys: AppKeys) {
     log.silly("Initializing BoxyHQAuditLogManager");
 
