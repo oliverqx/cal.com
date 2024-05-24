@@ -10,13 +10,29 @@ export default class BoxyHQAuditLogManager implements AuditLogsManager {
   private client: undefined | Retraced.Client;
   constructor(appKeys: AppKeys) {
     log.silly("Initializing BoxyHQAuditLogManager");
+
     this.client = new Retraced.Client({
       apiKey: appKeys.apiKey,
       projectId: appKeys.projectId,
+      endpoint: appKeys.endpoint,
     });
   }
 
   public async reportEvent(event: AuditLogEvent) {
-    await this.client?.reportEvent({ ...event, target: { id: "" } });
+    return await this.client?.reportEvent({
+      action: event.action,
+      group: {
+        id: "dev",
+        name: "dev",
+      },
+      crud: "c",
+      created: new Date(),
+      source_ip: "127.0.0.1",
+      actor: event.actor,
+      target: {
+        ...event.target,
+        id: "100",
+      },
+    });
   }
 }
