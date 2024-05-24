@@ -1,6 +1,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useSearchParams } from "next/navigation";
 import { useState, useEffect } from "react";
+import type { UseFormReturn } from "react-hook-form";
 import { useForm } from "react-hook-form";
 
 import { availableTriggerTargets } from "@calcom/features/audit-logs/constants";
@@ -11,13 +12,14 @@ import { showToast } from "@calcom/ui";
 
 import { appKeysSchema } from "../zod";
 import { AuditLogEventToggles } from "./AuditLogEventToggles";
+import { AuditLogViewer } from "./AuditLogViewer";
 import { AuditSystemStatus } from "./AuditSystemStatus";
 import { CredentialsForm } from "./CredentialsForm";
 import { NavigationPanel } from "./NavigationPanel";
 
 export default function AppSettings(props: { credentialId: number }) {
   const searchParams = useSearchParams();
-  const logs = searchParams.get(props.credentialId.toString());
+  const activePanel = searchParams.get(props.credentialId.toString());
   const { t } = useLocale();
   const { data, isLoading } = trpc.viewer.appCredentialById.useQuery({
     id: props.credentialId,
@@ -73,21 +75,57 @@ export default function AppSettings(props: { credentialId: number }) {
           <AuditSystemStatus credentialId={props.credentialId} />
           <NavigationPanel credentialId={props.credentialId} />
         </div>
-        {logs ? (
-          <AuditLogEventToggles
-            credentialId={props.credentialId}
-            settings={data?.settings as { empty: boolean; disabledEvents: string[] }}
-            value={value}
-            onChange={onChange}
-          />
-        ) : (
-          <CredentialsForm
-            form={form}
-            updateAppCredentialsMutation={updateAppCredentialsMutation.mutate}
-            credentialId={props.credentialId}
-          />
+        {renderPanel(
+          activePanel,
+          props.credentialId,
+          data?.settings as { empty: boolean; disabledEvents: string[] },
+          value,
+          onChange,
+          form,
+          updateAppCredentialsMutation
         )}
       </div>
     </div>
   );
+}
+
+function renderPanel(
+  activePanel: string | null,
+  credentialId: number,
+  settings: { empty: boolean; disabledEvents: string[] },
+  value: { label: string; value: AuditLogTriggerTargets; key: string },
+  onChange: (key: string | undefined) => void,
+  form: UseFormReturn<
+    {
+      apiKey: string;
+      projectId: string;
+      endpoint: string;
+    },
+    any
+  >,
+  updateAppCredentialsMutation: any
+) {
+  switch (activePanel) {
+    case "logs": {
+      return <AuditLogViewer credentialId={credentialId} />;
+    }
+
+    case "triggers": {
+      return (
+        <AuditLogEventToggles
+          credentialId={credentialId}
+          settings={settings as { empty: boolean; disabledEvents: string[] }}
+          value={value}
+          onChange={onChange}
+        />
+      );
+    }
+
+    default:
+      <CredentialsForm
+        form={form}
+        updateAppCredentialsMutation={updateAppCredentialsMutation}
+        credentialId={credentialId}
+      />;
+  }
 }
