@@ -19,7 +19,7 @@ export const CredentialsForm = ({
   return (
     <Form
       form={form}
-      className="flex w-[80%] flex-col justify-between space-y-4"
+      className="flex w-[100%] flex-col justify-between space-y-4"
       handleSubmit={async (values) => {
         try {
           updateAppCredentialsMutation({

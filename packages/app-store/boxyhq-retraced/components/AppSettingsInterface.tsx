@@ -75,15 +75,17 @@ export default function AppSettings(props: { credentialId: number }) {
           <AuditSystemStatus credentialId={props.credentialId} />
           <NavigationPanel credentialId={props.credentialId} />
         </div>
-        {renderPanel(
-          activePanel,
-          props.credentialId,
-          data?.settings as { empty: boolean; disabledEvents: string[] },
-          value,
-          onChange,
-          form,
-          updateAppCredentialsMutation
-        )}
+        <div className="flex w-[80%] flex-col justify-between space-y-4">
+          {renderPanel(
+            activePanel,
+            props.credentialId,
+            data?.settings as { empty: boolean; disabledEvents: string[] },
+            value,
+            onChange,
+            form,
+            updateAppCredentialsMutation
+          )}
+        </div>
       </div>
     </div>
   );
@@ -122,10 +124,12 @@ function renderPanel(
     }
 
     default:
-      <CredentialsForm
-        form={form}
-        updateAppCredentialsMutation={updateAppCredentialsMutation}
-        credentialId={credentialId}
-      />;
+      return (
+        <CredentialsForm
+          form={form}
+          updateAppCredentialsMutation={updateAppCredentialsMutation.mutate}
+          credentialId={credentialId}
+        />
+      );
   }
 }
