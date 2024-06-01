@@ -13,6 +13,7 @@ export const AppSetupMap = {
   zapier: dynamic(() => import("../../zapier/pages/setup")),
   make: dynamic(() => import("../../make/pages/setup")),
   closecom: dynamic(() => import("../../closecom/pages/setup")),
+  "boxyhq-retraced": dynamic(() => import("../../boxyhq-retraced/pages/setup")),
   sendgrid: dynamic(() => import("../../sendgrid/pages/setup")),
   stripe: dynamic(() => import("../../stripepayment/pages/setup")),
   paypal: dynamic(() => import("../../paypal/pages/setup")),

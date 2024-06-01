@@ -4,6 +4,7 @@
 **/
 import { appKeysSchema as alby_zod_ts } from "./alby/zod";
 import { appKeysSchema as basecamp3_zod_ts } from "./basecamp3/zod";
+import { appKeysSchema as boxyhq_retraced_zod_ts } from "./boxyhq-retraced/zod";
 import { appKeysSchema as closecom_zod_ts } from "./closecom/zod";
 import { appKeysSchema as dailyvideo_zod_ts } from "./dailyvideo/zod";
 import { appKeysSchema as fathom_zod_ts } from "./fathom/zod";
@@ -49,6 +50,7 @@ export const appKeysSchemas = {
   alby: alby_zod_ts,
   basecamp3: basecamp3_zod_ts,
   closecom: closecom_zod_ts,
+  "boxyhq-retraced": boxyhq_retraced_zod_ts,
   dailyvideo: dailyvideo_zod_ts,
   fathom: fathom_zod_ts,
   feishucalendar: feishucalendar_zod_ts,
