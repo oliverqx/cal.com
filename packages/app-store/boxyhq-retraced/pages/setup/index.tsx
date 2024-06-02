@@ -51,7 +51,7 @@ export default function BoxyHQSetup() {
 
   return (
     <div className="bg-emphasis flex h-screen">
-      <div className="bg-default m-auto rounded p-5 md:w-[520px] md:p-10">
+      <div className="bg-default m-auto rounded p-5 md:w-[600px] md:p-10">
         <div className="flex flex-col space-y-5 md:flex-row md:space-x-5 md:space-y-0">
           <div>
             {/* eslint-disable @next/next/no-img-element */}
@@ -65,7 +65,7 @@ export default function BoxyHQSetup() {
             <h1 className="text-default">{t("provide_api_key")}</h1>
 
             <div className="mt-1 text-sm">
-              {t("generate_api_key_description", { appName: "Close.com" })}{" "}
+              {t("generate_api_key_description", { appName: "Retraced" })}{" "}
               <a
                 className="text-indigo-400"
                 href="https://boxyhq.com/audit-logs"
@@ -73,7 +73,7 @@ export default function BoxyHQSetup() {
                 rel="noopener noreferrer">
                 BoxyHQ Retraced
               </a>
-              . {t("it_stored_encrypted")}
+              .
             </div>
             <div className="my-2 mt-3">
               <CredentialsForm form={form} action={FormAction.CREATE} onCreate={onCreate} />
