@@ -1,9 +1,9 @@
-import { boxyHQAuthenticate, getBoxyHQKey } from "boxyhq-retraced/lib/boxysdk";
 import type { NextApiRequest, NextApiResponse } from "next";
 import z from "zod";
 
 import { defaultResponder } from "@calcom/lib/server";
 
+import { boxyHQAuthenticate, getBoxyHQKey } from "../lib/boxysdk";
 import { AuditLogDefaultTemplates } from "../lib/constants";
 
 const ZPingInputSchema = z.object({
