@@ -1,3 +1,6 @@
+import checkSession from "_utils/auth";
+import type { NextApiRequest } from "next";
+
 import {
   getDefaultAppSettings,
   getDefaultGeneralSettingsOptions,
@@ -5,6 +8,7 @@ import {
 import { type GeneralSettingsOption } from "@calcom/features/audit-logs/types";
 import type { DefaultAppSettingOptionEntry } from "@calcom/features/audit-logs/types";
 import { getHref } from "@calcom/features/audit-logs/utils";
+import { HttpError } from "@calcom/lib/http-error";
 import type { IconName } from "@calcom/ui";
 
 import { BoxyHQTemplatesSettingsOptionCard } from "../components/BoxyHQTemplatesSettingsOptionCard";
@@ -53,4 +57,12 @@ export function getGeneralSettingsOptions(): GeneralSettingsOption[] {
     component: (option: BoxyGeneralSettingsOption) => <BoxyHQTemplatesSettingsOptionCard option={option} />,
   };
   return [...defaultOptions, templateReset];
+}
+
+export function getIdentifier(req: NextApiRequest) {
+  const session = checkSession(req);
+  if (!session.user.email) {
+    throw new HttpError({ statusCode: 401, message: "Unauthorized. User is missing email." });
+  }
+  return session.user.email; // Email will be used to identify user in BoxyHQ side
 }

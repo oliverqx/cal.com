@@ -4,6 +4,7 @@ import prisma from "@calcom/prisma";
 
 import config from "../config.json";
 import { appKeysSchema } from "../zod";
+import { AuditLogDefaultTemplates } from "./constants";
 
 const loginSuccessSchema = z.object({
   token: z.string(),
@@ -60,4 +61,29 @@ export async function boxyHQAuthenticate(adminToken: string, endpoint: string, e
   }
 
   return login.token;
+}
+
+export function boxyHqCreateTemplates(
+  boxyAdminKey: string,
+  projectId: string,
+  endpoint: string,
+  environmentId: string
+) {
+  const headers = new Headers();
+  headers.append("Authorization", boxyAdminKey);
+  headers.append("Content-Type", "application/json");
+
+  const body = JSON.stringify({ templates: AuditLogDefaultTemplates });
+
+  const requestOptions = {
+    method: "POST",
+    headers,
+    body,
+    redirect: "follow" as const,
+  };
+
+  return fetch(
+    `${endpoint}/admin/v1/project/${projectId}/templates?environment_id=${environmentId}`,
+    requestOptions
+  );
 }
