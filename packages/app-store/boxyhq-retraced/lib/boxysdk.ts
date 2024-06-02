@@ -28,14 +28,14 @@ export async function getBoxyHQKey(credentialId: number) {
   return appKeys;
 }
 
-export async function boxyHQAuthenticate(apiToken: string, endpoint: string) {
+export async function boxyHQAuthenticate(adminToken: string, endpoint: string, email: string) {
   const loginHeaders = new Headers();
-  loginHeaders.append("Authorization", `token=${apiToken}`);
+  loginHeaders.append("Authorization", `token=${adminToken}`);
   loginHeaders.append("Content-Type", "application/json");
 
   const loginClaim = JSON.stringify({
     claims: {
-      email: "david@acme.com",
+      email: email,
     },
   });
 
