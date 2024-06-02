@@ -1,57 +1,44 @@
+import { boxyHQAuthenticate, getBoxyHQKey } from "boxyhq-retraced/lib/boxysdk";
 import type { NextApiRequest, NextApiResponse } from "next";
 import z from "zod";
 
 import { defaultResponder } from "@calcom/lib/server";
-import prisma from "@calcom/prisma";
+
+import { AuditLogDefaultTemplates } from "../lib/constants";
 
 const ZPingInputSchema = z.object({
   credentialId: z.number(),
+  environmentId: z.string(),
 });
 
 export async function handler(req: NextApiRequest, res: NextApiResponse) {
-  const { credentialId } = ZPingInputSchema.parse(req.body);
-  const credential = await prisma.credential.findFirst({
-    where: {
-      id: credentialId,
-    },
-  });
+  const { credentialId, environmentId } = ZPingInputSchema.parse(req.body);
 
-  if (!credential) {
-    throw new Error(`Unable to find user credential for type }`);
-  }
+  const boxyHqKey = await getBoxyHQKey(credentialId);
 
-  const myHeaders = new Headers();
-  myHeaders.append(
-    "Authorization",
-    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJkNjYxN2M4MGNhZjk0M2ZhOTA2ZmQ1OTEyZDlmZDk5ZCIsImlhdCI6MTcxNzE1ODU2MCwiZXhwIjoxNzE4OTcyOTYwfQ.O6y_0sAL7DjHkFPkLMI-QR0Stiy-Hovzbh4jwVFfifQ"
-  );
-  myHeaders.append("Content-Type", "application/json");
+  // Admin key is needed to edit templates.
+  const boxyAdminKey = await boxyHQAuthenticate(boxyHqKey.apiKey, boxyHqKey.endpoint);
 
-  const raw = JSON.stringify({
-    name: "SYSTEM.PING",
-    rule: [
-      {
-        comparator: "is",
-        path: "action",
-        value: "SYSTEM.PING",
-      },
-    ],
-    template: "{{ actor.name }} has pinged system.",
-  });
+  const headers = new Headers();
+  headers.append("Authorization", boxyAdminKey);
+  headers.append("Content-Type", "application/json");
+
+  const body = JSON.stringify({ templates: AuditLogDefaultTemplates });
 
   const requestOptions = {
     method: "POST",
-    headers: myHeaders,
-    body: raw,
+    headers,
+    body,
     redirect: "follow" as const,
   };
 
   try {
-    const l = await fetch(
-      "http://localhost:3000/auditlog/admin/v1/project/8a270f6ce7164151b3382f41bf4ac2d8/templates?environment_id=f1f96d20af39404aa1c4add932cce77d",
+    await fetch(
+      `${boxyHqKey.endpoint}/admin/v1/project/${boxyHqKey.projectId}/templates?environment_id=${environmentId}`,
       requestOptions
     );
-    return res.status(200).json({ message: l });
+
+    return res.status(200).json({ message: "Templates created successfully." });
   } catch (e) {
     return res.status(500).json({ message: e });
   }
