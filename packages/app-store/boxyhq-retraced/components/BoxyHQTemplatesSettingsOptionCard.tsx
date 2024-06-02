@@ -10,7 +10,7 @@ import type { BoxyGeneralSettingsOption } from "../lib/utils";
 
 export const BoxyHQTemplatesSettingsOptionCard = ({ option }: { option: BoxyGeneralSettingsOption }) => {
   const [animationRef] = useAutoAnimate<HTMLDivElement>();
-  const { data, isLoading } = useAppCredential();
+  const { data, isLoading, credentialId } = useAppCredential();
 
   const mutation = useMutation({
     mutationFn: async () => {
@@ -18,7 +18,7 @@ export const BoxyHQTemplatesSettingsOptionCard = ({ option }: { option: BoxyGene
         method: "post",
         headers: { "Content-type": "application/json" },
         body: JSON.stringify({
-          credentialId: 4,
+          credentialId,
         }),
       });
 
