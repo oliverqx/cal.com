@@ -15,9 +15,10 @@ export type ConfirmationDialogContentProps = {
   cancelBtnText?: string;
   isPending?: boolean;
   loadingText?: string;
+  confirmDisabled?: boolean;
   onConfirm?: (event: React.MouseEvent<HTMLElement, MouseEvent>) => void;
   title: string;
-  variety?: "danger" | "warning" | "success";
+  variety?: "danger" | "warning" | "success" | "information";
 } & ConfirmBtnType;
 
 export function ConfirmationDialogContent(props: PropsWithChildren<ConfirmationDialogContentProps>) {
@@ -36,6 +37,7 @@ export const ConfirmationContent = (props: PropsWithChildren<ConfirmationDialogC
     confirmBtn = null,
     confirmBtnText = t("confirm"),
     cancelBtnText = t("cancel"),
+    confirmDisabled = false,
     loadingText = t("loading"),
     isPending = false,
     onConfirm,
@@ -62,6 +64,11 @@ export const ConfirmationContent = (props: PropsWithChildren<ConfirmationDialogC
                 <Icon name="check" className="h-5 w-5 text-green-600" />
               </div>
             )}
+            {variety === "information" && (
+              <div className="mx-auto rounded-full bg-sky-200 p-2 text-center">
+                <Icon name="info" className="h-5 w-5 text-sky-600" />
+              </div>
+            )}
           </div>
         )}
         <div>
@@ -81,7 +88,8 @@ export const ConfirmationContent = (props: PropsWithChildren<ConfirmationDialogC
             color="primary"
             loading={isPending}
             onClick={(e) => onConfirm && onConfirm(e)}
-            data-testid="dialog-confirmation">
+            data-testid="dialog-confirmation"
+            disabled={confirmDisabled}>
             {isPending ? loadingText : confirmBtnText}
           </DialogClose>
         )}
