@@ -49,8 +49,8 @@ import { appKeysSchema as zoomvideo_zod_ts } from "./zoomvideo/zod";
 export const appKeysSchemas = {
   alby: alby_zod_ts,
   basecamp3: basecamp3_zod_ts,
-  closecom: closecom_zod_ts,
   "boxyhq-retraced": boxyhq_retraced_zod_ts,
+  closecom: closecom_zod_ts,
   dailyvideo: dailyvideo_zod_ts,
   fathom: fathom_zod_ts,
   feishucalendar: feishucalendar_zod_ts,
