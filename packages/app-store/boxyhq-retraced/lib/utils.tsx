@@ -1,6 +1,6 @@
-import checkSession from "_utils/auth";
 import type { NextApiRequest } from "next";
 
+import checkSession from "@calcom/app-store/_utils/auth";
 import {
   getDefaultAppSettings,
   getDefaultGeneralSettingsOptions,
