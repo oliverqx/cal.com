@@ -40,6 +40,7 @@
   "tooltipInformationDisabled": "Enable",
   "managed_auditLog_event_dialog_title": "You're disabling an audit logging event.",
   "managed_auditLog_event_dialog_confirm_button": "Confirm",
+  "admin_action_auditLog_dialog_title": "You're executing an admin action at BoxyHQ.",
   "go_back": "Cancel",
   "settings_have_been_updated": "Settings have been successfully updated.",
   "credentials": "Credentials",
