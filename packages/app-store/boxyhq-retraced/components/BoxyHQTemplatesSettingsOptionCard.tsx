@@ -2,16 +2,15 @@ import { useAutoAnimate } from "@formkit/auto-animate/react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "@tanstack/react-query";
 import { useState } from "react";
-import { Controller } from "react-hook-form";
 import { useForm } from "react-hook-form";
 import z from "zod";
 
 import { Button, showToast } from "@calcom/ui";
-import { Form, PasswordField } from "@calcom/ui";
 
 import appConfig from "../config.json";
 import { useAppCredential } from "../context/CredentialContext";
 import type { BoxyGeneralSettingsOption } from "../lib/utils";
+import { AdminKeyForm } from "./AdminKeyForm";
 import PreAdminActionDialog from "./PreAdminActionDialog";
 
 export const BoxyHQTemplatesSettingsOptionCard = ({ option }: { option: BoxyGeneralSettingsOption }) => {
@@ -44,6 +43,8 @@ export const BoxyHQTemplatesSettingsOptionCard = ({ option }: { option: BoxyGene
         showToast("Templates creation failed. Please ensure your credentials are valid.", "error");
       }
 
+      setOpen(false);
+
       return {
         status: response.status,
         message: response.statusText,
@@ -67,31 +68,7 @@ export const BoxyHQTemplatesSettingsOptionCard = ({ option }: { option: BoxyGene
             Confirm
           </Button>
         }>
-        <Form
-          form={form}
-          className="mb-7 flex w-[100%] flex-col justify-between space-y-4"
-          handleSubmit={() => form.handleSubmit((e) => console.log(e))}>
-          <p className="mb-7 mt-1">
-            We need your Admin Root Key to perform this action. This information will not be saved by Cal.com
-          </p>
-
-          <Controller
-            name="adminKey"
-            control={form.control}
-            render={({ field: { onBlur, onChange, value } }) => (
-              <div className="col-span-4 col-start-2 row-start-1 flex flex-row items-end space-x-5">
-                <PasswordField
-                  onChange={onChange}
-                  onBlur={onBlur}
-                  name="Admin Key"
-                  value={value}
-                  className="mb-0"
-                  containerClassName="w-[100%] data-[dirty=true]:w-[90%] duration-300"
-                />
-              </div>
-            )}
-          />
-        </Form>
+        <AdminKeyForm form={form} />
       </PreAdminActionDialog>
       <div className="border-subtle flex items-center justify-between rounded-md border">
         <div className="p-4 sm:p-4">
