@@ -3,7 +3,7 @@ import { Label } from "@calcom/ui";
 import { useAppCredential } from "../context/CredentialContext";
 
 export const AuditSystemStatus = () => {
-  const { status, statusLoading: isLoading } = useAppCredential();
+  const { status, statusLoading: isLoading, refetchStatus } = useAppCredential();
 
   if (isLoading || !status || typeof status === "undefined") {
     return (
@@ -21,7 +21,9 @@ export const AuditSystemStatus = () => {
   const credentialIsValid = status?.status === 200;
 
   return (
-    <div className="mb-1 grid h-[60px] grid-cols-3 overflow-hidden rounded-md border">
+    <div
+      className="mb-1 grid h-[60px] grid-cols-3 overflow-hidden rounded-md border hover:cursor-pointer"
+      onClick={() => refetchStatus()}>
       <div className="flex flex-row items-center justify-center border-r-[1px]">
         <span className="relative flex h-5 w-5">
           <span
