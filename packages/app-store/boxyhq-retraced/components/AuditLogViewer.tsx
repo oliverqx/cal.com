@@ -15,7 +15,7 @@ const RetracedEventsBrowser = dynamic(() => import("@retracedhq/logs-viewer"), {
 });
 
 export const AuditLogViewer = () => {
-  const credentialId = useAppCredential;
+  const { credentialId } = useAppCredential();
   const { data: viewerToken } = useQuery({
     queryKey: ["viewerToken", credentialId.toString()],
     queryFn: async () => {
@@ -26,8 +26,6 @@ export const AuditLogViewer = () => {
           credentialId,
         }),
       });
-
-      console.log({ response });
 
       if (response.status === 200) {
         showToast("Viewer token retrieved successfully.", "success");
