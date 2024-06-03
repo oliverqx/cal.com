@@ -1,5 +1,4 @@
 import type { NextApiRequest, NextApiResponse } from "next";
-import z from "zod";
 
 import getInstalledAppPath from "@calcom/app-store/_utils/getInstalledAppPath";
 import { createDefaultInstallation } from "@calcom/app-store/_utils/installation";
@@ -9,12 +8,7 @@ import { defaultResponder } from "@calcom/lib/server";
 import appConfig from "../config.json";
 import type { BoxyHqProject } from "../lib/boxysdk";
 import { boxyHQAuthenticate, createProject } from "../lib/boxysdk";
-
-const ZPingInputSchema = z.object({
-  sudoKey: z.string(),
-  boxyHqEndpoint: z.string(),
-  projectName: z.string(),
-});
+import { ZBoxyProjectCreationInput, appKeysSchema, boxySettingsInfoClientSafe } from "../zod";
 
 export async function handler(req: NextApiRequest, res: NextApiResponse) {
   const session = req.session;
@@ -22,7 +16,7 @@ export async function handler(req: NextApiRequest, res: NextApiResponse) {
     throw new HttpError({ statusCode: 401, message: "Unauthorized. User is missing email." });
   }
 
-  const { sudoKey, boxyHqEndpoint, projectName } = ZPingInputSchema.parse(req.body);
+  const { sudoKey, boxyHqEndpoint, projectName } = ZBoxyProjectCreationInput.parse(req.body);
   const boxyAuthenticationToken = await boxyHQAuthenticate(sudoKey, boxyHqEndpoint, session.user.email);
 
   let projectMetadata: BoxyHqProject | undefined;
@@ -60,13 +54,21 @@ export async function handler(req: NextApiRequest, res: NextApiResponse) {
         endpoint: boxyHqEndpoint,
       },
       settings: {
+        projectName: boxyHqMetadata.name,
         environments: boxyHqMetadata.environments,
       },
     });
 
+    const parsedSettings = boxySettingsInfoClientSafe.parse(appCredential.settings);
+    const { activeEnvironment, endpoint } = appKeysSchema.parse(appCredential.key);
+
     return res.status(200).json({
       url: getInstalledAppPath({ variant: "auditLogs", slug: appConfig.slug }),
       credentialId: appCredential.id,
+      projectName: parsedSettings.projectName,
+      activeEnvironment: parsedSettings.environments[activeEnvironment],
+      endpoint,
+      environments: Object.values(parsedSettings.environments),
     });
   } catch (reason) {
     return res.status(500).json({ message: "Could not add BoxyHQ Retraced app" });
