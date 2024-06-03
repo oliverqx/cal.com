@@ -14,16 +14,14 @@ interface PreAdminActionDialogProps {
 
 export default function PreAdminActionDialog(props: PreAdminActionDialogProps) {
   const { t } = useLocale("audit-logs");
-  const { onOpenChange, isLoading, onConfirm, isOpen } = props;
+  const { onOpenChange, isLoading, isOpen } = props;
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <ConfirmationDialogContent
         isPending={isLoading}
         variety="information"
-        title={t("admin_action_auditLog_dialog_title", {
-          actionKey: "asdf",
-        })}
+        title={t("admin_action_auditLog_dialog_title")}
         confirmDisabled={isLoading}
         cancelBtnText={t("go_back")}
         confirmBtn={props.confirmBtn}>
