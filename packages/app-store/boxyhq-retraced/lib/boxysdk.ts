@@ -22,7 +22,7 @@ export async function getBoxyHQKey(credentialId: number) {
   }
 
   const appKeys = appKeysSchema.parse(credential.key);
-  if (!appKeys.apiKey || !appKeys.endpoint || !appKeys.projectId) {
+  if (!appKeys.activeEnvironment || !appKeys.endpoint || !appKeys.projectId) {
     throw new Error(`Invalid BoxyHQ key for credential with id: ${credentialId}`);
   }
 
@@ -88,7 +88,11 @@ export function boxyHqCreateTemplates(
   );
 }
 
-export function createProject(boxyAdminKey: string, projectName: string, boxyHqEndpoint: string) {
+export async function createProject(
+  boxyAdminKey: string,
+  projectName: string,
+  boxyHqEndpoint: string
+): Promise<BoxyHqProject | undefined> {
   const headers = new Headers();
   headers.append("Authorization", boxyAdminKey);
   headers.append("Content-Type", "application/json");
@@ -104,5 +108,46 @@ export function createProject(boxyAdminKey: string, projectName: string, boxyHqE
     redirect: "follow" as const,
   };
 
-  return fetch(`${boxyHqEndpoint}/admin/v1/project`, requestOptions);
+  try {
+    return (await (await fetch(`${boxyHqEndpoint}/admin/v1/project`, requestOptions)).json()).project;
+  } catch (e) {
+    console.log(e);
+  }
 }
+
+export type BoxyHqProject = {
+  id: string;
+  name: string;
+  created: number;
+  environments: Environment[];
+  tokens: Token[];
+};
+
+type Token = {
+  project_id: string;
+  environment_id: string;
+  token: string;
+  disabled: boolean;
+  name: string;
+  created: Date;
+};
+
+type Environment = {
+  id: string;
+  name: string;
+};
+
+type Credential = {
+  id: string;
+  projectId: string;
+  settings: {
+    disabledEvents: string[];
+    environments: {
+      [key: string]: {
+        id: string;
+        name: string;
+        token: string;
+      };
+    };
+  };
+};
