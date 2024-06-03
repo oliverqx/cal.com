@@ -21,8 +21,8 @@ const pingEvent: Retraced.Event = {
     type: "SYSTEM",
   },
   group: {
-    id: "dev",
-    name: "dev",
+    id: "default",
+    name: "default",
   },
   crud: CRUD.CREATE,
   created: new Date(),
