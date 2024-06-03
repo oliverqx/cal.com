@@ -92,6 +92,8 @@ export const AuditLogCredentialProvider = ({
         lastCheck: new Date().toLocaleString(),
       };
     },
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
   });
 
   const form = useForm<AppKeys>({
