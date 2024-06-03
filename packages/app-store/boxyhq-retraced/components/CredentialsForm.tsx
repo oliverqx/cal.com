@@ -4,7 +4,7 @@ import { Controller } from "react-hook-form";
 
 import { Form, InputField, Button, Select, Skeleton, Label } from "@calcom/ui";
 
-import type { AppKeys, ClientSafeAppKeysSchema } from "../zod";
+import type { AppKeys, AppSettingsForm } from "../zod";
 
 export enum FormAction {
   CREATE,
@@ -12,7 +12,7 @@ export enum FormAction {
 }
 
 type CredentialsFormProps = {
-  form: UseFormReturn<ClientSafeAppKeysSchema, any>;
+  form: UseFormReturn<AppSettingsForm, any>;
   hideBtn?: boolean;
   options: { label: string; value: string; key: string }[];
 } & (CredentialCreationForm | CredentialUpdateForm);
@@ -52,7 +52,7 @@ export const CredentialsForm = (props: CredentialsFormProps) => {
         // }
       }}>
       <Controller
-        name="projectId"
+        name="projectName"
         control={props.form.control}
         render={({ field: { onBlur, onChange, value } }) => (
           <div className="col-span-4 col-start-2 row-start-1 flex flex-row items-end space-x-5">

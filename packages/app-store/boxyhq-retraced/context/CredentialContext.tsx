@@ -5,7 +5,6 @@ import { useSearchParams } from "next/navigation";
 import { createContext, useContext, useState, useEffect } from "react";
 import type { UseFormReturn } from "react-hook-form";
 import { useForm } from "react-hook-form";
-import type z from "zod";
 
 import { availableTriggerTargets } from "@calcom/features/audit-logs/constants";
 import type { AuditLogTriggerTargets } from "@calcom/prisma/enums";
@@ -13,10 +12,8 @@ import { trpc } from "@calcom/trpc";
 import { showToast } from "@calcom/ui";
 
 import appConfig from "../config.json";
-import type { credentialSettingsFormSchema } from "../zod";
+import type { AppSettingsForm } from "../zod";
 import { ExpectedCredential, appKeysSchema } from "../zod";
-
-export type CredentialSettings = z.infer<typeof credentialSettingsFormSchema>;
 
 const AuditLogCredentialContext = createContext<
   | {
@@ -34,7 +31,7 @@ const AuditLogCredentialContext = createContext<
       onChange(key: string | undefined): void;
       credentialId: number;
       activePanel: string | null;
-      form: UseFormReturn<CredentialSettings, any>;
+      form: UseFormReturn<AppSettingsForm, any>;
       status:
         | {
             status: number;
@@ -61,6 +58,7 @@ const AuditLogCredentialContext = createContext<
     }
   | undefined
 >(undefined);
+
 export const AuditLogCredentialProvider = ({
   credentialId,
   children,
@@ -83,12 +81,11 @@ export const AuditLogCredentialProvider = ({
 
   useEffect(() => {
     if (isLoading === false && data) {
-      console.log({ data });
       const { activeEnvironment, projectName, endpoint, environments } = ExpectedCredential.parse(data);
       form.reset({
-        activeEnvironment: activeEnvironment,
-        projectId: projectName,
-        endpoint: endpoint,
+        activeEnvironment,
+        projectName,
+        endpoint,
       });
       setOptions(environments);
     }
@@ -138,7 +135,7 @@ export const AuditLogCredentialProvider = ({
     refetchOnWindowFocus: false,
   });
 
-  const form = useForm<CredentialSettings>({
+  const form = useForm<AppSettingsForm>({
     resolver: zodResolver(appKeysSchema),
   });
 

@@ -11,7 +11,7 @@ import { Button, showToast } from "@calcom/ui";
 import { CredentialsForm, FormAction } from "../../components/CredentialsForm";
 import { ProjectCreationForm } from "../../components/ProjectCreationForm";
 import appConfig from "../../config.json";
-import type { ClientSafeAppKeysSchema } from "../../zod";
+import type { AppSettingsForm } from "../../zod";
 import { ZBoxyProjectCreationInput, type BoxyProjectCreationInput } from "../../zod";
 
 const formSchema = ZBoxyProjectCreationInput;
@@ -48,7 +48,7 @@ export default function BoxyHQSetup() {
     },
   ]);
 
-  const confirmationForm = useForm<ClientSafeAppKeysSchema>({
+  const confirmationForm = useForm<AppSettingsForm>({
     resolver: zodResolver(formSchema),
   });
   const creationForm = useForm<BoxyProjectCreationInput>({
@@ -68,7 +68,7 @@ export default function BoxyHQSetup() {
       credentialId: number;
       endpoint: string;
       activeEnvironment: { value: string; label: string; key: string };
-      name: string;
+      projectName: string;
       environments: { value: string; label: string; key: string }[];
       message: string;
     } = await res.json();
@@ -81,7 +81,7 @@ export default function BoxyHQSetup() {
       confirmationForm.reset({
         activeEnvironment: json.activeEnvironment,
         endpoint: json.endpoint,
-        projectId: json.name,
+        projectName: json.projectName,
       });
       setOptions(json.environments);
     } else {
@@ -124,7 +124,7 @@ export default function BoxyHQSetup() {
 function renderStage(
   stage: BoxySetupStagesValues,
   creationForm: UseFormReturn<BoxyProjectCreationInput, any>,
-  confirmationForm: UseFormReturn<ClientSafeAppKeysSchema, any>,
+  confirmationForm: UseFormReturn<AppSettingsForm, any>,
   options: { label: string; value: string; key: string }[]
 ) {
   switch (stage) {

@@ -1,5 +1,4 @@
-import { boxySettingsInfoClientSafe } from "@calcom/app-store/boxyhq-retraced/zod";
-import { appKeysSchema } from "@calcom/app-store/boxyhq-retraced/zod";
+import { boxySettingsInfoClientSafe, appKeysSchema } from "@calcom/app-store/boxyhq-retraced/zod";
 import getUserAdminTeams from "@calcom/features/ee/teams/lib/getUserAdminTeams";
 import { prisma } from "@calcom/prisma";
 import type { TrpcSessionUser } from "@calcom/trpc/server/trpc";
