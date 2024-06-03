@@ -17,7 +17,7 @@ export async function getHandler(req: NextApiRequest, res: NextApiResponse) {
     throw new HttpError({ statusCode: 400, message: "App Keys invalid." });
 
   try {
-    await createDefaultInstallation({
+    const appCredential = await createDefaultInstallation({
       appType: config.type,
       user: session.user,
       slug: config.slug,
@@ -27,11 +27,13 @@ export async function getHandler(req: NextApiRequest, res: NextApiResponse) {
         endpoint,
       },
     });
+    return res.status(200).json({
+      url: getInstalledAppPath({ variant: "auditLogs", slug: config.slug }),
+      credentialId: appCredential.id,
+    });
   } catch (reason) {
     return res.status(500).json({ message: "Could not add BoxyHQ Retraced app" });
   }
-
-  return res.status(200).json({ url: getInstalledAppPath({ variant: "auditLogs", slug: config.slug }) });
 }
 
 export default defaultResponder(getHandler);
