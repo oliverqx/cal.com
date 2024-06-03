@@ -59,7 +59,7 @@ export const BoxyHQTemplatesSettingsOptionCard = ({ option }: { option: BoxyGene
         isOpen={isOpen}
         onOpenChange={handleOpenChange}
         isLoading={isPending}
-        onConfirm={(e) => console.log("hehy")}
+        onConfirm={(e) => console.log("This function will be removed later.")}
         confirmBtn={
           <Button
             type="submit"
