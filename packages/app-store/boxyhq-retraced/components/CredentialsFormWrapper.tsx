@@ -6,7 +6,7 @@ import { useAppCredential } from "../context/CredentialContext";
 import { CredentialsForm, FormAction } from "./CredentialsForm";
 
 export const CredentialsFormWrapper = () => {
-  const { form, credentialId } = useAppCredential();
+  const { form, credentialId, options } = useAppCredential();
   const { t } = useLocale();
 
   const updateAppCredentialsMutation = trpc.viewer.appsRouter.updateAppCredentials.useMutation({
@@ -22,6 +22,7 @@ export const CredentialsFormWrapper = () => {
   return (
     <CredentialsForm
       form={form}
+      options={options}
       action={FormAction.UPDATE}
       credentialId={credentialId}
       onSubmit={updateAppCredentialsMutation.mutate}

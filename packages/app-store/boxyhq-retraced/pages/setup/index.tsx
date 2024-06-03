@@ -1,37 +1,35 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useMutation } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import type { UseFormReturn } from "react-hook-form";
 import { useForm } from "react-hook-form";
 import { Toaster } from "react-hot-toast";
-import z from "zod";
 
 import { useLocale } from "@calcom/lib/hooks/useLocale";
 import { Button, showToast } from "@calcom/ui";
 
-import { AdminKeyForm } from "../../components/AdminKeyForm";
 import { CredentialsForm, FormAction } from "../../components/CredentialsForm";
+import { ProjectCreationForm } from "../../components/ProjectCreationForm";
 import appConfig from "../../config.json";
-import type { AppKeys } from "../../zod";
-import { appKeysSchema } from "../../zod";
+import type { ClientSafeAppKeysSchema } from "../../zod";
+import { ZBoxyProjectCreationInput, type BoxyProjectCreationInput } from "../../zod";
 
-const formSchema = appKeysSchema;
+const formSchema = ZBoxyProjectCreationInput;
 
 const stageText = {
-  CREDENTIALS: {
+  CREATION: {
     title: "provide_auditlog_credentials",
     description: "generate_api_key_description",
   },
-  TEMPLATES: {
+  CONFIRMATION: {
     title: "create_auditlog_templates",
     description: "create_auditLog_description",
   },
 };
 
 const BoxySetupStages = {
-  CREDENTIALS: "CREDENTIALS",
-  TEMPLATES: "TEMPLATES",
+  CREATION: "CREATION",
+  CONFIRMATION: "CONFIRMATION",
 } as const;
 
 type BoxySetupStagesKeys = keyof typeof BoxySetupStages;
@@ -39,76 +37,69 @@ type BoxySetupStagesValues = (typeof BoxySetupStages)[BoxySetupStagesKeys];
 
 export default function BoxyHQSetup() {
   const router = useRouter();
-  const [stage, setStage] = useState<BoxySetupStagesValues>(BoxySetupStages.CREDENTIALS);
+  const [stage, setStage] = useState<BoxySetupStagesValues>(BoxySetupStages.CREATION);
   const [credentialId, setCredentialId] = useState<undefined | number>(undefined);
   const [url, setUrl] = useState<undefined | string>(undefined);
+  const [options, setOptions] = useState<{ label: string; value: string; key: string }[]>([
+    {
+      label: "none",
+      value: "none",
+      key: "none",
+    },
+  ]);
 
-  const form = useForm<AppKeys>({
+  const confirmationForm = useForm<ClientSafeAppKeysSchema>({
+    resolver: zodResolver(formSchema),
+  });
+  const creationForm = useForm<BoxyProjectCreationInput>({
     resolver: zodResolver(formSchema),
   });
 
-  const form2 = useForm<{ adminKey: string }>({
-    resolver: zodResolver(z.object({ adminKey: z.string() })),
-  });
-
-  async function onCreate(values: AppKeys) {
-    const res = await fetch(`/api/integrations/${appConfig.slug}/add`, {
+  async function onCreate(values: BoxyProjectCreationInput) {
+    const res = await fetch(`/api/integrations/${appConfig.slug}/createProject`, {
       method: "POST",
       body: JSON.stringify(values),
       headers: {
         "Content-Type": "application/json",
       },
     });
-    const json: { url: string; credentialId: number; message: string } = await res.json();
+    const json: {
+      url: string;
+      credentialId: number;
+      endpoint: string;
+      activeEnvironment: { value: string; label: string; key: string };
+      name: string;
+      environments: { value: string; label: string; key: string }[];
+      message: string;
+    } = await res.json();
 
     if (res.ok) {
       showToast("BoxyHQ App created successfully.", "success");
-      setStage(BoxySetupStages.TEMPLATES);
+      setStage(BoxySetupStages.CONFIRMATION);
       setCredentialId(json.credentialId);
       setUrl(json.url);
+      confirmationForm.reset({
+        activeEnvironment: json.activeEnvironment,
+        endpoint: json.endpoint,
+        projectId: json.name,
+      });
+      setOptions(json.environments);
     } else {
       showToast(json.message, "error");
     }
   }
 
-  const mutation = useMutation({
-    mutationFn: async ({ adminKey }: { adminKey: string }) => {
-      if (!credentialId || !url) {
-        showToast("Credential ID is not set. Configuration might've failed.", "error");
-        return;
-      }
-
-      const response = await fetch(`/api/integrations/${appConfig.slug}/createTemplates`, {
-        method: "post",
-        headers: { "Content-type": "application/json" },
-        body: JSON.stringify({
-          credentialId,
-          adminRootToken: adminKey,
-        }),
-      });
-
-      if (response.status === 200) {
-        showToast("Templates created successfully.", "success");
-        router.push(url);
-      } else {
-        showToast("Templates creation failed. Please ensure your credentials are valid.", "error");
-      }
-
-      return {
-        status: response.status,
-        message: response.statusText,
-        lastCheck: new Date().toLocaleString(),
-      };
-    },
-  });
-
   async function handleSubmitButton() {
-    if (stage === BoxySetupStages.CREDENTIALS) {
-      return form.handleSubmit(async (values) => await onCreate(values))();
+    if (stage === BoxySetupStages.CREATION) {
+      return creationForm.handleSubmit(
+        async (values) => await onCreate(values),
+        (e) => console.log(e)
+      )();
     } else {
-      return form2.handleSubmit((values) => mutation.mutate(values))();
+      return console.log("HEYEEERAREEAFASDc");
     }
   }
+
   return (
     <div className="bg-emphasis flex h-screen">
       <div className="bg-default m-auto rounded p-5 md:w-[600px] md:p-10">
@@ -116,7 +107,7 @@ export default function BoxyHQSetup() {
           <div className="flex space-x-5">
             <Title stage={stage} />
           </div>
-          <div>{renderStage(stage, form, form2, onCreate, mutation)}</div>
+          <div>{renderStage(stage, creationForm, confirmationForm, options)}</div>
           <div className="flex w-full justify-end">
             <Button type="submit" onClick={() => handleSubmitButton()}>
               Submit
@@ -132,28 +123,15 @@ export default function BoxyHQSetup() {
 
 function renderStage(
   stage: BoxySetupStagesValues,
-  form: UseFormReturn<
-    {
-      apiKey: string;
-      projectId: string;
-      endpoint: string;
-    },
-    any
-  >,
-  form2: UseFormReturn<{ adminKey: string }, any>,
-  onCreate: (values: AppKeys) => Promise<void>,
-  mutation: any
+  creationForm: UseFormReturn<BoxyProjectCreationInput, any>,
+  confirmationForm: UseFormReturn<ClientSafeAppKeysSchema, any>,
+  options: { label: string; value: string; key: string }[]
 ) {
   switch (stage) {
-    case BoxySetupStages.CREDENTIALS:
-      return <CredentialsForm form={form} action={FormAction.CREATE} onCreate={onCreate} hideBtn />;
-    case BoxySetupStages.TEMPLATES:
-      return (
-        <div className="flex h-[100%] w-[100%] flex-col space-y-4">
-          <AdminKeyForm form={form2} />
-        </div>
-      );
-
+    case BoxySetupStages.CREATION:
+      return <ProjectCreationForm form={creationForm} />;
+    case BoxySetupStages.CONFIRMATION:
+      return <CredentialsForm options={options} form={confirmationForm} action={FormAction.CREATE} />;
     default:
       break;
   }
