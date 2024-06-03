@@ -81,7 +81,7 @@ export const BoxyHQTemplatesSettingsOptionCard = ({ option }: { option: BoxyGene
         </div>
         <div ref={animationRef} className="p-4">
           <Button onClick={() => setOpen(true)} disabled={data?.isInvalid ?? false}>
-            {isLoading ? "Loading..." : data?.settings.templateSetup ? option.resetButton : option.button}
+            {isLoading ? "Loading..." : option.button}
           </Button>
         </div>
       </div>

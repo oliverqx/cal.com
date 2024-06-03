@@ -41,8 +41,6 @@ export function getAppSettingsOptions(
 }
 
 export interface BoxyGeneralSettingsOption extends GeneralSettingsOption {
-  resetDescription: string;
-  resetButton: string;
   component?: (option: BoxyGeneralSettingsOption) => JSX.Element;
 }
 
@@ -50,10 +48,8 @@ export function getGeneralSettingsOptions(): GeneralSettingsOption[] {
   const defaultOptions = getDefaultGeneralSettingsOptions();
   const templateReset: BoxyGeneralSettingsOption = {
     name: "Template",
-    description: "Create default templates for all events.",
-    button: "Create",
-    resetDescription: "Reset templates to default values",
-    resetButton: "Reset",
+    description: "Reset templates on all events.",
+    button: "Reset",
     component: (option: BoxyGeneralSettingsOption) => <BoxyHQTemplatesSettingsOptionCard option={option} />,
   };
   return [...defaultOptions, templateReset];
@@ -64,5 +60,5 @@ export function getIdentifier(req: NextApiRequest) {
   if (!session.user.email) {
     throw new HttpError({ statusCode: 401, message: "Unauthorized. User is missing email." });
   }
-  return session.user.email; // Email will be used to identify user in BoxyHQ side
+  return session.user;
 }
