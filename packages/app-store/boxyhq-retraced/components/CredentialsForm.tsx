@@ -14,6 +14,7 @@ export enum FormAction {
 
 type CredentialsFormProps = {
   form: UseFormReturn<AppKeys, any>;
+  hideBtn?: boolean;
 } & (CredentialCreationForm | CredentialUpdateForm);
 
 export type CredentialCreationForm = { action: FormAction.CREATE; onCreate?: (props: AppKeys) => void };
@@ -99,17 +100,19 @@ export const CredentialsForm = (props: CredentialsFormProps) => {
                 className="mb-0"
                 containerClassName="w-[100%] data-[dirty=true]:w-[90%] duration-300"
               />{" "}
+              {props.hideBtn ?? (
+                <Button
+                  data-dirty={props.form.formState.isDirty}
+                  className="mb-1 data-[dirty=false]:hidden "
+                  loading={loading}
+                  type="submit">
+                  Submit
+                </Button>
+              )}
             </div>
           );
         }}
       />
-      <Button
-        data-dirty={props.form.formState.isDirty}
-        className="mb-1 data-[dirty=false]:hidden"
-        loading={loading}
-        type="submit">
-        Submit
-      </Button>
     </Form>
   );
 };
