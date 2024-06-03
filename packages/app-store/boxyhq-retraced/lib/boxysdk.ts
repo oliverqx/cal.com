@@ -87,3 +87,22 @@ export function boxyHqCreateTemplates(
     requestOptions
   );
 }
+
+export function createProject(boxyAdminKey: string, projectName: string, boxyHqEndpoint: string) {
+  const headers = new Headers();
+  headers.append("Authorization", boxyAdminKey);
+  headers.append("Content-Type", "application/json");
+
+  const body = JSON.stringify({
+    name: projectName,
+  });
+
+  const requestOptions = {
+    method: "POST",
+    headers,
+    body,
+    redirect: "follow" as const,
+  };
+
+  return fetch(`${boxyHqEndpoint}/admin/v1/project`, requestOptions);
+}
