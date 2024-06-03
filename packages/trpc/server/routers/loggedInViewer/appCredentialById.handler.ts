@@ -1,5 +1,5 @@
-import type { Prisma } from "@prisma/client";
-
+import { boxySettingsInfoClientSafe } from "@calcom/app-store/boxyhq-retraced/zod";
+import { appKeysSchema } from "@calcom/app-store/boxyhq-retraced/zod";
 import getUserAdminTeams from "@calcom/features/ee/teams/lib/getUserAdminTeams";
 import { prisma } from "@calcom/prisma";
 import type { TrpcSessionUser } from "@calcom/trpc/server/trpc";
@@ -22,7 +22,7 @@ export const appCredentialByIdHandler = async ({ ctx, input }: AppCredentialsByI
     return teamIds;
   }, [] as number[]);
 
-  const data = await prisma.credential.findUnique({
+  const appCredential = await prisma.credential.findUnique({
     where: {
       OR: [
         { userId: user.id },
@@ -36,13 +36,16 @@ export const appCredentialByIdHandler = async ({ ctx, input }: AppCredentialsByI
     },
   });
 
-  if (data && data?.key) {
+  if (appCredential) {
+    const parsedSettings = boxySettingsInfoClientSafe.parse(appCredential.settings);
+    const { activeEnvironment, endpoint } = appKeysSchema.parse(appCredential.key);
+
     return {
-      apiKey: (data.key as Prisma.JsonObject).apiKey as string | undefined,
-      endpoint: (data.key as Prisma.JsonObject).endpoint as string | undefined,
-      projectId: (data.key as Prisma.JsonObject).projectId as string | undefined,
-      settings: data.settings,
-      isInvalid: data.invalid,
+      credentialId: appCredential.id,
+      projectName: parsedSettings.projectName,
+      activeEnvironment: parsedSettings.environments[activeEnvironment],
+      endpoint,
+      environments: Object.values(parsedSettings.environments),
     };
   } else return {};
 };
