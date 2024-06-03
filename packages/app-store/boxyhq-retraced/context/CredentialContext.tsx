@@ -1,5 +1,6 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useQuery } from "@tanstack/react-query";
+import type { RefetchOptions, QueryObserverResult } from "@tanstack/react-query";
 import { useSearchParams } from "next/navigation";
 import { createContext, useContext, useState, useEffect } from "react";
 import type { UseFormReturn } from "react-hook-form";
@@ -39,6 +40,16 @@ const AuditLogCredentialContext = createContext<
           }
         | undefined;
       statusLoading: boolean;
+      refetchStatus: (options?: RefetchOptions | undefined) => Promise<
+        QueryObserverResult<
+          {
+            status: number;
+            message: string;
+            lastCheck: string;
+          },
+          Error
+        >
+      >;
     }
   | undefined
 >(undefined);
@@ -69,7 +80,11 @@ export const AuditLogCredentialProvider = ({
     }
   }
 
-  const { data: checkStatus, isLoading: loadingStatus } = useQuery({
+  const {
+    data: checkStatus,
+    isLoading: loadingStatus,
+    refetch: refetchStatus,
+  } = useQuery({
     queryKey: ["ping", credentialId.toString()],
     queryFn: async () => {
       const response = await fetch(`/api/integrations/${appConfig.slug}/ping`, {
@@ -122,6 +137,7 @@ export const AuditLogCredentialProvider = ({
         form,
         status: checkStatus,
         statusLoading: loadingStatus,
+        refetchStatus,
       }}>
       {children}
     </AuditLogCredentialContext.Provider>
