@@ -1,7 +1,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import type { UseFormReturn } from "react-hook-form";
 import { useForm } from "react-hook-form";
 import { Toaster } from "react-hot-toast";
@@ -39,7 +39,6 @@ type BoxySetupStagesValues = (typeof BoxySetupStages)[BoxySetupStagesKeys];
 
 export default function BoxyHQSetup() {
   const router = useRouter();
-  const [testPassed, setTestPassed] = useState<boolean | undefined>(undefined);
   const [stage, setStage] = useState<BoxySetupStagesValues>(BoxySetupStages.CREDENTIALS);
   const [credentialId, setCredentialId] = useState<undefined | number>(undefined);
   const [url, setUrl] = useState<undefined | string>(undefined);
@@ -51,15 +50,6 @@ export default function BoxyHQSetup() {
   const form2 = useForm<{ adminKey: string }>({
     resolver: zodResolver(z.object({ adminKey: z.string() })),
   });
-
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      if (testPassed === false) {
-        setTestPassed(undefined);
-      }
-    }, 3000);
-    return () => clearTimeout(timer);
-  }, [testPassed]);
 
   async function onCreate(values: AppKeys) {
     const res = await fetch(`/api/integrations/${appConfig.slug}/add`, {
