@@ -1,6 +1,13 @@
 import { zodResolver } from "@hookform/resolvers/zod";
+import type { BoxyHQCredentialState } from "boxyhq-retraced/context/utils";
+import {
+  BoxySetupStages,
+  afterCredentialCreationSetup,
+  initialState,
+  reducer,
+} from "boxyhq-retraced/context/utils";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useReducer } from "react";
 import type { UseFormReturn } from "react-hook-form";
 import { useForm } from "react-hook-form";
 import { Toaster } from "react-hot-toast";
@@ -16,7 +23,7 @@ import { boxyEnvironmentTransformer } from "../../context/CredentialContext";
 import { ZBoxyProjectCreationInput, appSettingsFormSchema, getClientSafeAppCredential } from "../../zod";
 import type { AppSettingsForm, BoxyProjectCreationInput } from "../../zod";
 
-const stageText = {
+const stageText: Record<BoxySetupStages, { title: string; description: string }> = {
   CREATION: {
     title: "provide_auditlog_credentials",
     description: "generate_api_key_description",
@@ -27,85 +34,55 @@ const stageText = {
   },
 };
 
-const BoxySetupStages = {
-  CREATION: "CREATION",
-  CONFIRMATION: "CONFIRMATION",
-} as const;
-
-type BoxySetupStagesKeys = keyof typeof BoxySetupStages;
-type BoxySetupStagesValues = (typeof BoxySetupStages)[BoxySetupStagesKeys];
-
 export default function BoxyHQSetup() {
   const router = useRouter();
   const { t } = useLocale("audit-logs");
+  const [state, dispatch] = useReducer(reducer, initialState);
 
-  // This is about navigation
-  const [stage, setStage] = useState<BoxySetupStagesValues>(BoxySetupStages.CREATION);
-
-  // This is creedential information mounting
-  const [credentialId, setCredentialId] = useState<undefined | number>(undefined);
-  const [url, setUrl] = useState<undefined | string>(undefined);
-
-  // This is about available environment options
-  const [options, setOptions] = useState<{ label: string; value: string; key: string }[]>([
-    {
-      label: "none",
-      value: "none",
-      key: "none",
-    },
-  ]);
-
-  // Confirmation Form
   const confirmationForm = useForm<AppSettingsForm>({
     resolver: zodResolver(appSettingsFormSchema),
   });
 
-  // Creation form
   const creationForm = useForm<BoxyProjectCreationInput>({
     resolver: zodResolver(ZBoxyProjectCreationInput),
   });
 
-  // App creation function.
   async function onCreate(values: BoxyProjectCreationInput) {
-    const res = await fetch(`/api/integrations/${appConfig.slug}/createProject`, {
-      method: "POST",
-      body: JSON.stringify(values),
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
-
-    const json = await res.json();
+    const json = await (
+      await fetch(`/api/integrations/${appConfig.slug}/createProject`, {
+        method: "POST",
+        body: JSON.stringify(values),
+        headers: {
+          "Content-Type": "application/json",
+        },
+      })
+    ).json();
 
     const appCredential = getClientSafeAppCredential.extend({ url: z.string() }).parse(json);
-
     const parsedEnvironments = boxyEnvironmentTransformer.parse(appCredential.settings.environments);
 
-    if (res.ok) {
+    if (appCredential.id) {
       showToast("BoxyHQ App created successfully.", "success");
-      setStage(BoxySetupStages.CONFIRMATION);
-      setCredentialId(appCredential.id);
-      setUrl(appCredential.url);
+
+      dispatch(
+        afterCredentialCreationSetup(appCredential.id, appCredential.url, Object.values(parsedEnvironments))
+      );
+
       confirmationForm.reset({
         activeEnvironment: parsedEnvironments[appCredential.key.activeEnvironment],
         endpoint: appCredential.key.endpoint,
         projectName: appCredential.settings.projectName,
       });
-      setOptions(Object.values(parsedEnvironments));
     } else {
       showToast(json.message, "error");
     }
   }
 
-  // this handles all actions.
   async function handleSubmitButton() {
-    if (stage === BoxySetupStages.CREATION) {
-      return creationForm.handleSubmit(
-        async (values) => await onCreate(values),
-        (e) => console.log(e)
-      )();
+    if (state.boxyCredentialState === BoxySetupStages.CREATION) {
+      return creationForm.handleSubmit(async (values) => await onCreate(values))();
     } else {
-      router.push(url as string);
+      router.push(state.credentialInfo.url);
     }
   }
 
@@ -121,11 +98,16 @@ export default function BoxyHQSetup() {
               className="h-[50px] w-[50px] max-w-2xl"
             />
             <div>
-              <h1 className="text-default">{t(stageText[stage].title)}</h1>
-              <div className="mt-1 text-sm">{t(stageText[stage].description)} </div>
+              <h1 className="text-default">{t(stageText[state.boxyCredentialState].title)}</h1>
+              <div className="mt-1 text-sm">{t(stageText[state.boxyCredentialState].description)} </div>
             </div>
           </div>
-          {renderStage(stage, creationForm, confirmationForm, options, handleSubmitButton)}
+          {renderStage({
+            state,
+            creationForm,
+            confirmationForm,
+            handleSubmitButton,
+          })}
         </div>
         {/* <Stepper href="" step={1} steps={stageText} /> */}
       </div>
@@ -134,22 +116,22 @@ export default function BoxyHQSetup() {
   );
 }
 
-function renderStage(
-  stage: BoxySetupStagesValues,
-  creationForm: UseFormReturn<BoxyProjectCreationInput, any>,
-  confirmationForm: UseFormReturn<AppSettingsForm, any>,
-  options: { label: string; value: string; key: string }[],
-  handleSubmitButton: () => Promise<void>
-) {
-  switch (stage) {
+type RenderStageProps = {
+  creationForm: UseFormReturn<BoxyProjectCreationInput, any>;
+  confirmationForm: UseFormReturn<AppSettingsForm, any>;
+  handleSubmitButton: () => Promise<void>;
+  state: BoxyHQCredentialState;
+};
+function renderStage(props: RenderStageProps) {
+  switch (props.state.boxyCredentialState) {
     case BoxySetupStages.CREATION:
       return (
         <>
           <div>
-            <ProjectCreationForm form={creationForm} />;
+            <ProjectCreationForm form={props.creationForm} />;
           </div>
           <div className="flex w-full justify-end">
-            <Button type="submit" onClick={() => handleSubmitButton()}>
+            <Button type="submit" onClick={() => props.handleSubmitButton()}>
               Submit
             </Button>
           </div>
@@ -159,11 +141,16 @@ function renderStage(
       return (
         <>
           <div>
-            <CredentialsForm options={options} hideBtn form={confirmationForm} action={FormAction.CREATE} />
+            <CredentialsForm
+              options={props.state.credentialInfo.options}
+              hideBtn
+              form={props.confirmationForm}
+              action={FormAction.CREATE}
+            />
           </div>
           <div className="flex w-full justify-end">
-            <Button type="submit" onClick={() => handleSubmitButton()}>
-              {confirmationForm.formState.isDirty ? "Update" : "Continue"}
+            <Button type="submit" onClick={() => props.handleSubmitButton()}>
+              {props.confirmationForm.formState.isDirty ? "Update" : "Continue"}
             </Button>
           </div>
         </>
