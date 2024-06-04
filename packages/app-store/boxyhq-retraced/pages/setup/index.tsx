@@ -13,10 +13,8 @@ import { CredentialsForm, FormAction } from "../../components/CredentialsForm";
 import { ProjectCreationForm } from "../../components/ProjectCreationForm";
 import appConfig from "../../config.json";
 import { boxyEnvironmentTransformer } from "../../context/CredentialContext";
-import { ZBoxyProjectCreationInput, getClientSafeAppCredential } from "../../zod";
+import { ZBoxyProjectCreationInput, appSettingsFormSchema, getClientSafeAppCredential } from "../../zod";
 import type { AppSettingsForm, BoxyProjectCreationInput } from "../../zod";
-
-const formSchema = ZBoxyProjectCreationInput;
 
 const stageText = {
   CREATION: {
@@ -39,6 +37,7 @@ type BoxySetupStagesValues = (typeof BoxySetupStages)[BoxySetupStagesKeys];
 
 export default function BoxyHQSetup() {
   const router = useRouter();
+  const { t } = useLocale("audit-logs");
   const [stage, setStage] = useState<BoxySetupStagesValues>(BoxySetupStages.CREATION);
   const [credentialId, setCredentialId] = useState<undefined | number>(undefined);
   const [url, setUrl] = useState<undefined | string>(undefined);
@@ -51,10 +50,10 @@ export default function BoxyHQSetup() {
   ]);
 
   const confirmationForm = useForm<AppSettingsForm>({
-    resolver: zodResolver(formSchema),
+    resolver: zodResolver(appSettingsFormSchema),
   });
   const creationForm = useForm<BoxyProjectCreationInput>({
-    resolver: zodResolver(formSchema),
+    resolver: zodResolver(ZBoxyProjectCreationInput),
   });
 
   async function onCreate(values: BoxyProjectCreationInput) {
@@ -68,24 +67,19 @@ export default function BoxyHQSetup() {
 
     const json = await res.json();
 
-    const {
-      id,
-      url,
-      key: { activeEnvironment, endpoint },
-      settings: { projectName, environments },
-    } = getClientSafeAppCredential.extend({ url: z.string() }).parse(json);
+    const appCredential = getClientSafeAppCredential.extend({ url: z.string() }).parse(json);
 
-    const parsedEnvironments = boxyEnvironmentTransformer.parse(environments);
+    const parsedEnvironments = boxyEnvironmentTransformer.parse(appCredential.settings.environments);
 
     if (res.ok) {
       showToast("BoxyHQ App created successfully.", "success");
       setStage(BoxySetupStages.CONFIRMATION);
-      setCredentialId(id);
-      setUrl(url);
+      setCredentialId(appCredential.id);
+      setUrl(appCredential.url);
       confirmationForm.reset({
-        activeEnvironment: parsedEnvironments[activeEnvironment],
-        endpoint: endpoint,
-        projectName: projectName,
+        activeEnvironment: parsedEnvironments[appCredential.key.activeEnvironment],
+        endpoint: appCredential.key.endpoint,
+        projectName: appCredential.settings.projectName,
       });
       setOptions(Object.values(parsedEnvironments));
     } else {
@@ -100,7 +94,7 @@ export default function BoxyHQSetup() {
         (e) => console.log(e)
       )();
     } else {
-      return console.log("HEYEEERAREEAFASDc");
+      router.push(url as string);
     }
   }
 
@@ -109,14 +103,18 @@ export default function BoxyHQSetup() {
       <div className="bg-default m-auto rounded p-5 md:w-[600px] md:p-10">
         <div className="flex flex-col space-y-8">
           <div className="flex space-x-5">
-            <Title stage={stage} />
+            {/* eslint-disable @next/next/no-img-element */}
+            <img
+              src="/api/app-store/boxyhq-retraced/logo.png"
+              alt="BoxyHQ Retraced"
+              className="h-[50px] w-[50px] max-w-2xl"
+            />
+            <div>
+              <h1 className="text-default">{t(stageText[stage].title)}</h1>
+              <div className="mt-1 text-sm">{t(stageText[stage].description)} </div>
+            </div>
           </div>
-          <div>{renderStage(stage, creationForm, confirmationForm, options)}</div>
-          <div className="flex w-full justify-end">
-            <Button type="submit" onClick={() => handleSubmitButton()}>
-              Submit
-            </Button>
-          </div>
+          {renderStage(stage, creationForm, confirmationForm, options, handleSubmitButton)}
         </div>
         {/* <Stepper href="" step={1} steps={stageText} /> */}
       </div>
@@ -129,32 +127,37 @@ function renderStage(
   stage: BoxySetupStagesValues,
   creationForm: UseFormReturn<BoxyProjectCreationInput, any>,
   confirmationForm: UseFormReturn<AppSettingsForm, any>,
-  options: { label: string; value: string; key: string }[]
+  options: { label: string; value: string; key: string }[],
+  handleSubmitButton: () => Promise<void>
 ) {
   switch (stage) {
     case BoxySetupStages.CREATION:
-      return <ProjectCreationForm form={creationForm} />;
+      return (
+        <>
+          <div>
+            <ProjectCreationForm form={creationForm} />;
+          </div>
+          <div className="flex w-full justify-end">
+            <Button type="submit" onClick={() => handleSubmitButton()}>
+              Submit
+            </Button>
+          </div>
+        </>
+      );
     case BoxySetupStages.CONFIRMATION:
-      return <CredentialsForm options={options} form={confirmationForm} action={FormAction.CREATE} />;
+      return (
+        <>
+          <div>
+            <CredentialsForm options={options} hideBtn form={confirmationForm} action={FormAction.CREATE} />
+          </div>
+          <div className="flex w-full justify-end">
+            <Button type="submit" onClick={() => handleSubmitButton()}>
+              {confirmationForm.formState.isDirty ? "Update" : "Continue"}
+            </Button>
+          </div>
+        </>
+      );
     default:
-      break;
+      return null;
   }
-}
-
-function Title({ stage }: { stage: BoxySetupStagesValues }) {
-  const { t } = useLocale("audit-logs");
-  return (
-    <>
-      {/* eslint-disable @next/next/no-img-element */}
-      <img
-        src="/api/app-store/boxyhq-retraced/logo.png"
-        alt="BoxyHQ Retraced"
-        className="h-[50px] w-[50px] max-w-2xl"
-      />
-      <div>
-        <h1 className="text-default">{t(stageText[stage].title)}</h1>
-        <div className="mt-1 text-sm">{t(stageText[stage].description)} </div>
-      </div>
-    </>
-  );
 }
