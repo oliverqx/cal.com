@@ -1,6 +1,4 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useQuery } from "@tanstack/react-query";
-import type { RefetchOptions, QueryObserverResult } from "@tanstack/react-query";
 import { useSearchParams } from "next/navigation";
 import { createContext, useContext, useState, useEffect } from "react";
 import type { UseFormReturn } from "react-hook-form";
@@ -10,9 +8,7 @@ import { z } from "zod";
 import { availableTriggerTargets } from "@calcom/features/audit-logs/constants";
 import type { AuditLogTriggerTargets } from "@calcom/prisma/enums";
 import { trpc } from "@calcom/trpc";
-import { showToast } from "@calcom/ui";
 
-import appConfig from "../config.json";
 import type { AppSettingsForm } from "../zod";
 import { appKeysSchema, boxyHqEnvironmentSchema, getClientSafeAppCredential } from "../zod";
 
@@ -33,24 +29,6 @@ const AuditLogCredentialContext = createContext<
       credentialId: number;
       activePanel: string | null;
       form: UseFormReturn<AppSettingsForm, any>;
-      status:
-        | {
-            status: number;
-            message: string;
-            lastCheck: string;
-          }
-        | undefined;
-      statusLoading: boolean;
-      refetchStatus: (options?: RefetchOptions | undefined) => Promise<
-        QueryObserverResult<
-          {
-            status: number;
-            message: string;
-            lastCheck: string;
-          },
-          Error
-        >
-      >;
       options: {
         label: string;
         value: string;
@@ -73,11 +51,16 @@ export const AuditLogCredentialProvider = ({
   credentialId: number;
   children: React.ReactNode;
 }) => {
+  // This is about navigation for AppSettingsInterface
   const searchParams = useSearchParams();
   const activePanel = searchParams.get(credentialId.toString());
+
+  // This is credential data.
   const { data, isLoading } = trpc.viewer.appCredentialById.useQuery({
     id: credentialId,
   });
+
+  // This is about available environment options
   const [options, setOptions] = useState<{ label: string; value: string; key: string }[]>([
     {
       label: "none",
@@ -86,6 +69,7 @@ export const AuditLogCredentialProvider = ({
     },
   ]);
 
+  // This is about mounting the credential data once its been received
   useEffect(() => {
     if (isLoading === false && data) {
       const {
@@ -104,10 +88,10 @@ export const AuditLogCredentialProvider = ({
     }
   }, [isLoading]);
 
+  // This is about event toggles
   const [value, setValue] = useState<{ label: string; value: AuditLogTriggerTargets; key: string }>(
     availableTriggerTargets.booking
   );
-
   function onChange(key: string | undefined) {
     if (key) {
       const index = Object.keys(availableTriggerTargets).indexOf(key);
@@ -117,37 +101,7 @@ export const AuditLogCredentialProvider = ({
     }
   }
 
-  const {
-    data: checkStatus,
-    isLoading: loadingStatus,
-    refetch: refetchStatus,
-  } = useQuery({
-    queryKey: ["ping", credentialId.toString()],
-    queryFn: async () => {
-      const response = await fetch(`/api/integrations/${appConfig.slug}/ping`, {
-        method: "post",
-        headers: { "Content-type": "application/json" },
-        body: JSON.stringify({
-          credentialId,
-        }),
-      });
-
-      if (response.status === 200) {
-        showToast("Ping successful. Audit Logging integration is healthy.", "success");
-      } else {
-        showToast("Ping failed. Please ensure your credentials are valid.", "error");
-      }
-
-      return {
-        status: response.status,
-        message: response.statusText,
-        lastCheck: new Date().toLocaleString(),
-      };
-    },
-    refetchOnMount: false,
-    refetchOnWindowFocus: false,
-  });
-
+  // This holds form for app settings
   const form = useForm<AppSettingsForm>({
     resolver: zodResolver(appKeysSchema),
   });
@@ -162,9 +116,6 @@ export const AuditLogCredentialProvider = ({
         credentialId,
         activePanel,
         form,
-        status: checkStatus,
-        statusLoading: loadingStatus,
-        refetchStatus,
         options,
       }}>
       {children}

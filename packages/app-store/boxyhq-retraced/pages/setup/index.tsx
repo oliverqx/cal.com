@@ -38,9 +38,15 @@ type BoxySetupStagesValues = (typeof BoxySetupStages)[BoxySetupStagesKeys];
 export default function BoxyHQSetup() {
   const router = useRouter();
   const { t } = useLocale("audit-logs");
+
+  // This is about navigation
   const [stage, setStage] = useState<BoxySetupStagesValues>(BoxySetupStages.CREATION);
+
+  // This is creedential information mounting
   const [credentialId, setCredentialId] = useState<undefined | number>(undefined);
   const [url, setUrl] = useState<undefined | string>(undefined);
+
+  // This is about available environment options
   const [options, setOptions] = useState<{ label: string; value: string; key: string }[]>([
     {
       label: "none",
@@ -49,13 +55,17 @@ export default function BoxyHQSetup() {
     },
   ]);
 
+  // Confirmation Form
   const confirmationForm = useForm<AppSettingsForm>({
     resolver: zodResolver(appSettingsFormSchema),
   });
+
+  // Creation form
   const creationForm = useForm<BoxyProjectCreationInput>({
     resolver: zodResolver(ZBoxyProjectCreationInput),
   });
 
+  // App creation function.
   async function onCreate(values: BoxyProjectCreationInput) {
     const res = await fetch(`/api/integrations/${appConfig.slug}/createProject`, {
       method: "POST",
@@ -87,6 +97,7 @@ export default function BoxyHQSetup() {
     }
   }
 
+  // this handles all actions.
   async function handleSubmitButton() {
     if (stage === BoxySetupStages.CREATION) {
       return creationForm.handleSubmit(

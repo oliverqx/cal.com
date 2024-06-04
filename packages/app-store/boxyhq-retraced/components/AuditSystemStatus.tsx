@@ -1,9 +1,43 @@
-import { Label } from "@calcom/ui";
+import { useQuery } from "@tanstack/react-query";
 
+import { Label } from "@calcom/ui";
+import { showToast } from "@calcom/ui";
+
+import appConfig from "../config.json";
 import { useAppCredential } from "../context/CredentialContext";
 
 export const AuditSystemStatus = () => {
-  const { status, statusLoading: isLoading, refetchStatus } = useAppCredential();
+  const { credentialId } = useAppCredential();
+  const {
+    data: status,
+    isLoading: isLoading,
+    refetch: refetchStatus,
+  } = useQuery({
+    queryKey: ["ping", credentialId.toString()],
+    queryFn: async () => {
+      const response = await fetch(`/api/integrations/${appConfig.slug}/ping`, {
+        method: "post",
+        headers: { "Content-type": "application/json" },
+        body: JSON.stringify({
+          credentialId,
+        }),
+      });
+
+      if (response.status === 200) {
+        showToast("Ping successful. Audit Logging integration is healthy.", "success");
+      } else {
+        showToast("Ping failed. Please ensure your credentials are valid.", "error");
+      }
+
+      return {
+        status: response.status,
+        message: response.statusText,
+        lastCheck: new Date().toLocaleString(),
+      };
+    },
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
+  });
 
   if (isLoading || !status || typeof status === "undefined") {
     return (
