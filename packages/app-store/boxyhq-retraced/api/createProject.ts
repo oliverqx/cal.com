@@ -54,6 +54,7 @@ export async function handler(req: NextApiRequest, res: NextApiResponse) {
         endpoint: boxyHqEndpoint,
       },
       settings: {
+        disabledEvents: [],
         projectName: boxyHqMetadata.name,
         environments: boxyHqMetadata.environments,
       },

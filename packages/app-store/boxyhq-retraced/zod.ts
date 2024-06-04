@@ -5,6 +5,7 @@ import { Credential } from "../_utils/zod";
 export const appKeysSchema = z.object({
   activeEnvironment: z.string().min(1),
   endpoint: z.string().min(1),
+  projectId: z.string(),
 });
 export type AppKeys = z.infer<typeof appKeysSchema>;
 
@@ -25,7 +26,7 @@ export type BoxyProjectCreationInput = z.infer<typeof ZBoxyProjectCreationInput>
 export const appDataSchema = z.object({});
 
 export const appSettingsSchema = z.object({
-  disabledEvents: z.array(z.string()),
+  disabledEvents: z.array(z.string()).default([]),
   environments: z.record(boxyHqEnvironmentSchema),
   projectName: z.string(),
 });
@@ -39,6 +40,13 @@ export const getClientSafeAppCredential = Credential.extend({
     environments: z.record(boxyHqEnvironmentSchema.omit({ token: true })),
   }),
 });
+
+export const appCredentialSchema = Credential.extend({
+  key: appKeysSchema,
+  settings: appSettingsSchema,
+});
+
+export type BoxyCredential = z.infer<typeof appCredentialSchema>;
 
 export const appSettingsFormSchema = z.object({
   activeEnvironment: z.object({ key: z.string(), label: z.string(), value: z.string() }),
