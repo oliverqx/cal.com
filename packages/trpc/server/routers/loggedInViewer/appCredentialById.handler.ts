@@ -1,4 +1,4 @@
-import { boxySettingsInfoClientSafe, appKeysSchema } from "@calcom/app-store/boxyhq-retraced/zod";
+import { getClientSafeAppCredential } from "@calcom/app-store/boxyhq-retraced/zod";
 import getUserAdminTeams from "@calcom/features/ee/teams/lib/getUserAdminTeams";
 import { prisma } from "@calcom/prisma";
 import type { TrpcSessionUser } from "@calcom/trpc/server/trpc";
@@ -36,15 +36,8 @@ export const appCredentialByIdHandler = async ({ ctx, input }: AppCredentialsByI
   });
 
   if (appCredential) {
-    const parsedSettings = boxySettingsInfoClientSafe.parse(appCredential.settings);
-    const { activeEnvironment, endpoint } = appKeysSchema.parse(appCredential.key);
+    const clientSafeCredential = getClientSafeAppCredential.parse(appCredential);
 
-    return {
-      credentialId: appCredential.id,
-      projectName: parsedSettings.projectName,
-      activeEnvironment: parsedSettings.environments[activeEnvironment],
-      endpoint,
-      environments: Object.values(parsedSettings.environments),
-    };
+    return clientSafeCredential;
   } else return {};
 };
