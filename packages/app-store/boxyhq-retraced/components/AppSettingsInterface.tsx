@@ -1,3 +1,5 @@
+import { useSearchParams } from "next/navigation";
+
 import { DefaultAppSettingsOptions } from "@calcom/features/audit-logs/types";
 
 import { useAppCredential, AuditLogCredentialProvider } from "../context/CredentialContext";
@@ -18,7 +20,9 @@ export default function AppSettings(props: { credentialId: number }) {
 }
 
 function Interface() {
-  const { isLoading, activePanel } = useAppCredential();
+  const { isLoading, credentialId } = useAppCredential();
+  const searchParams = useSearchParams();
+  const activePanel = searchParams.get(credentialId.toString());
 
   if (isLoading) return null;
 
