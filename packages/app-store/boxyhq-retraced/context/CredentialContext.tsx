@@ -1,5 +1,4 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useSearchParams } from "next/navigation";
 import { createContext, useContext, useState, useEffect } from "react";
 import type { UseFormReturn } from "react-hook-form";
 import { useForm } from "react-hook-form";
@@ -23,7 +22,6 @@ const AuditLogCredentialContext = createContext<
         | undefined;
       isLoading: boolean;
       credentialId: number;
-      activePanel: string | null;
       form: UseFormReturn<AppSettingsForm, any>;
       options: {
         label: string;
@@ -47,9 +45,10 @@ export const AuditLogCredentialProvider = ({
   credentialId: number;
   children: React.ReactNode;
 }) => {
-  // This is about navigation for AppSettingsInterface
-  const searchParams = useSearchParams();
-  const activePanel = searchParams.get(credentialId.toString());
+  // This holds form for app settings
+  const form = useForm<AppSettingsForm>({
+    resolver: zodResolver(appKeysSchema),
+  });
 
   // This is credential data.
   const { data, isLoading } = trpc.viewer.appCredentialById.useQuery({
@@ -84,18 +83,12 @@ export const AuditLogCredentialProvider = ({
     }
   }, [isLoading]);
 
-  // This holds form for app settings
-  const form = useForm<AppSettingsForm>({
-    resolver: zodResolver(appKeysSchema),
-  });
-
   return (
     <AuditLogCredentialContext.Provider
       value={{
         data,
         isLoading,
         credentialId,
-        activePanel,
         form,
         options,
       }}>
