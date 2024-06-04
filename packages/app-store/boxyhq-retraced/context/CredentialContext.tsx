@@ -5,6 +5,7 @@ import { useSearchParams } from "next/navigation";
 import { createContext, useContext, useState, useEffect } from "react";
 import type { UseFormReturn } from "react-hook-form";
 import { useForm } from "react-hook-form";
+import { z } from "zod";
 
 import { availableTriggerTargets } from "@calcom/features/audit-logs/constants";
 import type { AuditLogTriggerTargets } from "@calcom/prisma/enums";
@@ -13,7 +14,7 @@ import { showToast } from "@calcom/ui";
 
 import appConfig from "../config.json";
 import type { AppSettingsForm } from "../zod";
-import { ExpectedCredential, appKeysSchema } from "../zod";
+import { appKeysSchema, boxyHqEnvironmentSchema, getClientSafeAppCredential } from "../zod";
 
 const AuditLogCredentialContext = createContext<
   | {
@@ -59,6 +60,12 @@ const AuditLogCredentialContext = createContext<
   | undefined
 >(undefined);
 
+export const boxyEnvironmentTransformer = z.record(
+  boxyHqEnvironmentSchema.omit({ token: true }).transform((values) => {
+    return { label: values.name, value: values.id, key: values.id };
+  })
+);
+
 export const AuditLogCredentialProvider = ({
   credentialId,
   children,
@@ -81,13 +88,19 @@ export const AuditLogCredentialProvider = ({
 
   useEffect(() => {
     if (isLoading === false && data) {
-      const { activeEnvironment, projectName, endpoint, environments } = ExpectedCredential.parse(data);
+      const {
+        key: { activeEnvironment: activeEnvironmentId, endpoint },
+        settings: { projectName, environments },
+      } = getClientSafeAppCredential.parse(data);
+
+      const parsedEnvironment = boxyEnvironmentTransformer.parse(environments);
+
       form.reset({
-        activeEnvironment,
+        activeEnvironment: parsedEnvironment[activeEnvironmentId],
         projectName,
         endpoint,
       });
-      setOptions(environments);
+      setOptions(Object.values(parsedEnvironment));
     }
   }, [isLoading]);
 

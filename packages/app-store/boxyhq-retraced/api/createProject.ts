@@ -8,7 +8,7 @@ import { defaultResponder } from "@calcom/lib/server";
 import appConfig from "../config.json";
 import type { BoxyHqProject } from "../lib/boxysdk";
 import { boxyHQAuthenticate, createProject } from "../lib/boxysdk";
-import { ZBoxyProjectCreationInput, appKeysSchema, boxySettingsInfoClientSafe } from "../zod";
+import { ZBoxyProjectCreationInput, getClientSafeAppCredential } from "../zod";
 
 export async function handler(req: NextApiRequest, res: NextApiResponse) {
   const session = req.session;
@@ -59,16 +59,11 @@ export async function handler(req: NextApiRequest, res: NextApiResponse) {
       },
     });
 
-    const parsedSettings = boxySettingsInfoClientSafe.parse(appCredential.settings);
-    const { activeEnvironment, endpoint } = appKeysSchema.parse(appCredential.key);
+    const clientSafeAppCredential = getClientSafeAppCredential.parse(appCredential);
 
     return res.status(200).json({
       url: getInstalledAppPath({ variant: "auditLogs", slug: appConfig.slug }),
-      credentialId: appCredential.id,
-      projectName: parsedSettings.projectName,
-      activeEnvironment: parsedSettings.environments[activeEnvironment],
-      endpoint,
-      environments: Object.values(parsedSettings.environments),
+      ...clientSafeAppCredential,
     });
   } catch (reason) {
     return res.status(500).json({ message: "Could not add BoxyHQ Retraced app" });

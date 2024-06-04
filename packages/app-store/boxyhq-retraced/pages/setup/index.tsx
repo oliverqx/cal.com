@@ -4,6 +4,7 @@ import { useState } from "react";
 import type { UseFormReturn } from "react-hook-form";
 import { useForm } from "react-hook-form";
 import { Toaster } from "react-hot-toast";
+import { z } from "zod";
 
 import { useLocale } from "@calcom/lib/hooks/useLocale";
 import { Button, showToast } from "@calcom/ui";
@@ -11,8 +12,9 @@ import { Button, showToast } from "@calcom/ui";
 import { CredentialsForm, FormAction } from "../../components/CredentialsForm";
 import { ProjectCreationForm } from "../../components/ProjectCreationForm";
 import appConfig from "../../config.json";
-import type { AppSettingsForm } from "../../zod";
-import { ZBoxyProjectCreationInput, type BoxyProjectCreationInput } from "../../zod";
+import { boxyEnvironmentTransformer } from "../../context/CredentialContext";
+import { ZBoxyProjectCreationInput, getClientSafeAppCredential } from "../../zod";
+import type { AppSettingsForm, BoxyProjectCreationInput } from "../../zod";
 
 const formSchema = ZBoxyProjectCreationInput;
 
@@ -63,27 +65,29 @@ export default function BoxyHQSetup() {
         "Content-Type": "application/json",
       },
     });
-    const json: {
-      url: string;
-      credentialId: number;
-      endpoint: string;
-      activeEnvironment: { value: string; label: string; key: string };
-      projectName: string;
-      environments: { value: string; label: string; key: string }[];
-      message: string;
-    } = await res.json();
+
+    const json = await res.json();
+
+    const {
+      id,
+      url,
+      key: { activeEnvironment, endpoint },
+      settings: { projectName, environments },
+    } = getClientSafeAppCredential.extend({ url: z.string() }).parse(json);
+
+    const parsedEnvironments = boxyEnvironmentTransformer.parse(environments);
 
     if (res.ok) {
       showToast("BoxyHQ App created successfully.", "success");
       setStage(BoxySetupStages.CONFIRMATION);
-      setCredentialId(json.credentialId);
-      setUrl(json.url);
+      setCredentialId(id);
+      setUrl(url);
       confirmationForm.reset({
-        activeEnvironment: json.activeEnvironment,
-        endpoint: json.endpoint,
-        projectName: json.projectName,
+        activeEnvironment: parsedEnvironments[activeEnvironment],
+        endpoint: endpoint,
+        projectName: projectName,
       });
-      setOptions(json.environments);
+      setOptions(Object.values(parsedEnvironments));
     } else {
       showToast(json.message, "error");
     }
