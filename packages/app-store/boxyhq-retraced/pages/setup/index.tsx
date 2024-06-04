@@ -1,11 +1,4 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import type { BoxyHQCredentialState } from "boxyhq-retraced/context/utils";
-import {
-  BoxySetupStages,
-  afterCredentialCreationSetup,
-  initialState,
-  reducer,
-} from "boxyhq-retraced/context/utils";
 import { useRouter } from "next/navigation";
 import { useReducer } from "react";
 import type { UseFormReturn } from "react-hook-form";
@@ -20,6 +13,8 @@ import { CredentialsForm, FormAction } from "../../components/CredentialsForm";
 import { ProjectCreationForm } from "../../components/ProjectCreationForm";
 import appConfig from "../../config.json";
 import { boxyEnvironmentTransformer } from "../../context/CredentialContext";
+import type { BoxyHQCredentialState } from "../../context/utils";
+import { BoxySetupStages, afterCredentialCreationSetup, initialState, reducer } from "../../context/utils";
 import { ZBoxyProjectCreationInput, appSettingsFormSchema, getClientSafeAppCredential } from "../../zod";
 import type { AppSettingsForm, BoxyProjectCreationInput } from "../../zod";
 
