@@ -29,6 +29,7 @@ export const reducer = (state: BoxyHQCredentialState, action: Action) => {
     case "afterCredentialCreation":
       return {
         ...state,
+        ...action.payload,
       };
     default:
       return state;
