@@ -2,10 +2,7 @@ import { useLocale } from "@calcom/lib/hooks/useLocale";
 import { ConfirmationDialogContent, Dialog } from "@calcom/ui";
 
 interface ManagedEventDialogProps {
-  actionKey: {
-    action: string;
-    checked: boolean;
-  };
+  action: string;
   onOpenChange: () => void;
   isPending: boolean;
   isOpen: boolean;
@@ -14,7 +11,7 @@ interface ManagedEventDialogProps {
 
 export default function ManagedAuditLogEventDialog(props: ManagedEventDialogProps) {
   const { t } = useLocale("audit-logs");
-  const { actionKey, onOpenChange, isPending, onConfirm, isOpen } = props;
+  const { action, onOpenChange, isPending, onConfirm, isOpen } = props;
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
@@ -22,14 +19,12 @@ export default function ManagedAuditLogEventDialog(props: ManagedEventDialogProp
         isPending={isPending}
         variety="warning"
         title={t("managed_auditLog_event_dialog_title", {
-          actionKey,
+          action,
         })}
         confirmBtnText={t("managed_auditLog_event_dialog_confirm_button")}
         cancelBtnText={t("go_back")}
         onConfirm={onConfirm}>
-        <p className="mt-5">
-          {t(`events.${props.actionKey.action}.managed_auditLog_event_dialog_clarification`)}
-        </p>
+        <p className="mt-5">{t(`events.${action}.managed_auditLog_event_dialog_clarification`)}</p>
       </ConfirmationDialogContent>
     </Dialog>
   );

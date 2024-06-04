@@ -5,8 +5,6 @@ import type { UseFormReturn } from "react-hook-form";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
-import { availableTriggerTargets } from "@calcom/features/audit-logs/constants";
-import type { AuditLogTriggerTargets } from "@calcom/prisma/enums";
 import { trpc } from "@calcom/trpc";
 
 import type { AppSettingsForm } from "../zod";
@@ -24,8 +22,6 @@ const AuditLogCredentialContext = createContext<
           }
         | undefined;
       isLoading: boolean;
-      value: { label: string; value: AuditLogTriggerTargets; key: string };
-      onChange(key: string | undefined): void;
       credentialId: number;
       activePanel: string | null;
       form: UseFormReturn<AppSettingsForm, any>;
@@ -88,19 +84,6 @@ export const AuditLogCredentialProvider = ({
     }
   }, [isLoading]);
 
-  // This is about event toggles
-  const [value, setValue] = useState<{ label: string; value: AuditLogTriggerTargets; key: string }>(
-    availableTriggerTargets.booking
-  );
-  function onChange(key: string | undefined) {
-    if (key) {
-      const index = Object.keys(availableTriggerTargets).indexOf(key);
-      setValue(Object.values(availableTriggerTargets)[index]);
-    } else {
-      setValue(Object.values(availableTriggerTargets)[0]);
-    }
-  }
-
   // This holds form for app settings
   const form = useForm<AppSettingsForm>({
     resolver: zodResolver(appKeysSchema),
@@ -110,8 +93,6 @@ export const AuditLogCredentialProvider = ({
     <AuditLogCredentialContext.Provider
       value={{
         data,
-        value,
-        onChange,
         isLoading,
         credentialId,
         activePanel,

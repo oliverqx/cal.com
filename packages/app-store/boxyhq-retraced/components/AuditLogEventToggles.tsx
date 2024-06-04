@@ -13,16 +13,23 @@ import ManagedAuditLogEventDialog from "./ManagedAuditLogEventDialog";
 export const AuditLogEventToggles = () => {
   const { t } = useLocale();
   const { t: tAuditLogs } = useLocale("audit-logs");
-  const { value, onChange, data, credentialId } = useAppCredential();
+  const { data, credentialId } = useAppCredential();
 
   // Select related
-  const [actionKey, setActionKey] = useState({ checked: true, action: "" });
-  function handleUpdate(checked: boolean, action: string) {
-    setOpen(true);
-    setActionKey({ checked, action });
+  const [value, setValue] = useState<{ label: string; value: AuditLogTriggerTargets; key: string }>(
+    availableTriggerTargets.booking
+  );
+  function onChange(key: string | undefined) {
+    if (key) {
+      const index = Object.keys(availableTriggerTargets).indexOf(key);
+      setValue(Object.values(availableTriggerTargets)[index]);
+    } else {
+      setValue(Object.values(availableTriggerTargets)[0]);
+    }
   }
 
   // Toggle related
+  const [triggerEvent, setTriggerEvent] = useState({ checked: true, action: "" });
   const [disabledEvents, setDisabledEvents] = useState<Set<string>>(new Set(data?.settings.disabledEvents));
   const updateCredentialSettingsMutation = trpc.viewer.appsRouter.updateCredentialSettings.useMutation({
     onSuccess: () => {
@@ -32,35 +39,37 @@ export const AuditLogEventToggles = () => {
       showToast(error.message, "error");
     },
   });
-
-  async function handleOnConfirm() {
-    updateCredentialSettingsMutation.mutate({
-      credentialId: credentialId.toString(),
-      settings: { toBeDisabled: !actionKey.checked, event: actionKey.action },
-    });
-
-    const newDisabledEvents = disabledEvents;
-    if (!actionKey.checked) {
-      newDisabledEvents.add(actionKey.action);
-      setDisabledEvents(newDisabledEvents);
-    } else {
-      newDisabledEvents.delete(actionKey.action);
-      setDisabledEvents(newDisabledEvents);
-    }
+  function handleEventToggle(checked: boolean, action: string) {
+    setOpen(true);
+    setTriggerEvent({ checked, action });
   }
 
   // ManagedAuditLogEventDialog Related
   const [isOpen, setOpen] = useState(false);
-
   function handleOpenChange() {
     setOpen((isOpen) => !isOpen);
+  }
+  async function handleOnConfirm() {
+    updateCredentialSettingsMutation.mutate({
+      credentialId: credentialId.toString(),
+      settings: { toBeDisabled: !triggerEvent.checked, event: triggerEvent.action },
+    });
+
+    const newDisabledEvents = disabledEvents;
+    if (!triggerEvent.checked) {
+      newDisabledEvents.add(triggerEvent.action);
+      setDisabledEvents(newDisabledEvents);
+    } else {
+      newDisabledEvents.delete(triggerEvent.action);
+      setDisabledEvents(newDisabledEvents);
+    }
   }
 
   return (
     <>
       <ManagedAuditLogEventDialog
         isPending={false}
-        actionKey={actionKey}
+        action={triggerEvent.action}
         onOpenChange={() => handleOpenChange()}
         onConfirm={() => handleOnConfirm()}
         isOpen={isOpen}
@@ -74,12 +83,12 @@ export const AuditLogEventToggles = () => {
         />
 
         <ul className="border-subtle divide-subtle my-4 h-[350px] divide-y overflow-scroll rounded-md border">
-          {Object.values(availableTriggerEvents[value.key]).map((action, key) => (
+          {Object.values(availableTriggerEvents[value.key]).map((triggerEvent, key) => (
             <li key={key} className="hover:bg-muted group relative flex items-center  justify-between p-4 ">
               <div>
                 <div className="flex flex-col lg:flex-row lg:items-center">
                   <div className="text-default text-sm font-semibold ltr:mr-2 rtl:ml-2">
-                    <span>{tAuditLogs(`events.${action}.title`)}</span>
+                    <span>{tAuditLogs(`events.${triggerEvent}.title`)}</span>
                   </div>
                   <div className="flex items-center space-x-2">
                     <Badge variant="grayWithoutHover" data-testid={true ? "required" : "optional"}>
@@ -88,14 +97,14 @@ export const AuditLogEventToggles = () => {
                   </div>
                 </div>
                 <p className="text-subtle max-w-[280px] break-words pt-1 text-sm sm:max-w-[500px]">
-                  {tAuditLogs(`events.${action}.description`)}
+                  {tAuditLogs(`events.${triggerEvent}.description`)}
                 </p>
               </div>
               <div className="flex items-center space-x-2">
                 <Switch
-                  checked={!disabledEvents.has(action)}
+                  checked={!disabledEvents.has(triggerEvent)}
                   onCheckedChange={(checked) => {
-                    handleUpdate(checked, action);
+                    handleEventToggle(checked, triggerEvent);
                   }}
                   classNames={{ container: "p-2 hover:bg-subtle rounded" }}
                   tooltip={
