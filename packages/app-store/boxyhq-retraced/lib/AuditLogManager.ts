@@ -20,7 +20,6 @@ export default class BoxyHQAuditLogManager implements AuditLogsManager {
   }
 
   public async reportEvent(event: Retraced.Event) {
-    const e = await this.client?.reportEvent(event);
-    return e;
+    return this.client?.reportEvent(event);
   }
 }

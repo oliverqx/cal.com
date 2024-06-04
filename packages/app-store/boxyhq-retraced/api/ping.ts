@@ -45,12 +45,12 @@ export async function handler(req: NextApiRequest, res: NextApiResponse) {
   const auditLogManager = new AuditLogManager(appKeys);
 
   try {
-    auditLogManager.reportEvent(pingEvent);
-    return res.status(200).end();
+    await auditLogManager.reportEvent(pingEvent);
   } catch (e) {
-    console.log({ e });
     return res.status(500).json({ message: e });
   }
+
+  return res.status(200).end();
 }
 
 export default defaultResponder(handler);
