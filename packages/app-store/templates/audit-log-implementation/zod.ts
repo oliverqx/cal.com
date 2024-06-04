@@ -10,9 +10,9 @@ export type AppKeys = z.infer<typeof appKeysSchema>;
 
 export const appDataSchema = z.object({});
 
-export const credentialSettingsSchema = z.object({
+export const appSettingsSchema = z.object({
   disabledEvents: z.array(z.string()),
   templateSetup: z.boolean(),
 });
 
-export type CredentialSettings = z.infer<typeof credentialSettingsSchema>;
+export type CredentialSettings = z.infer<typeof appSettingsSchema>;

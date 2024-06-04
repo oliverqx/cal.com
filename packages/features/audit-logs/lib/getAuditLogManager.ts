@@ -9,7 +9,7 @@ const auditLogImplementations = {
   // [slug: string]: function that imports entire app
   // example: () => import("./example"),
   genericImplementation: () => import("@calcom/app-store/templates/audit-log-implementation"),
-  // test: () => import("@calcom/app-store/test"),
+  "boxyhq-retraced": () => import("@calcom/app-store/boxyhq-retraced"),
 };
 
 const log = logger.getSubLogger({ prefix: ["[lib] auditLogManagerClient"] });
@@ -42,7 +42,8 @@ export async function getAuditLogManager(credential: Credential): Promise<AuditL
     return;
   }
 
-  const credentialKey = auditLogsManager.zod.appKeysSchema.parse(credential.key);
+  const appKeys = auditLogsManager.zod.appKeysSchema.parse(credential.key);
+  const appSettings = auditLogsManager.zod.appSettingsSchema.parse(credential.settings);
   const auditLogManager = auditLogsManager.lib.AuditLogManager;
-  return new auditLogManager(credentialKey);
+  return new auditLogManager(appKeys, appSettings);
 }
