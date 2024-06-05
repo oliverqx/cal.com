@@ -7,18 +7,11 @@ import { z } from "zod";
 
 import { useLocale } from "@calcom/lib/hooks/useLocale";
 import { Button, Stepper, showToast } from "@calcom/ui";
-import { Spinner } from "@calcom/ui/components/icon/Spinner";
 
 import { ProjectCreationForm } from "../../components/ProjectCreationForm";
 import appConfig from "../../config.json";
 import { boxyEnvironmentTransformer } from "../../context/CredentialContext";
-import {
-  BoxySetupStages,
-  creatingTemplates,
-  credentialCreated,
-  initialState,
-  reducer,
-} from "../../context/utils";
+import { BoxySetupStages, credentialCreated, initialState, reducer } from "../../context/utils";
 import { ZBoxyProjectCreationInput, appSettingsFormSchema, getClientSafeAppCredential } from "../../zod";
 import type { AppSettingsForm, BoxyProjectCreationInput } from "../../zod";
 
@@ -46,14 +39,6 @@ const stages = {
     },
     component: ProjectCreationForm,
     buttonText: "Create",
-  },
-  [BoxySetupStages.TEMPLATE_CREATION]: {
-    state: BoxySetupStages.TEMPLATE_CREATION,
-    text: {
-      title: "create_auditlog_templates",
-      description: "create_templates_description",
-    },
-    component: () => <Spinner className="w-[30%]" />,
   },
 };
 
@@ -106,10 +91,7 @@ export default function BoxyHQSetup() {
     if (state.boxyCredentialState === BoxySetupStages.CREATION) {
       await creationForm.handleSubmit(async (values) => await onCreate(values))();
     } else if (state.boxyCredentialState === BoxySetupStages.CONFIRMATION) {
-      return dispatch(creatingTemplates());
-      // router.push(state.credentialInfo.url);
-    } else {
-      return;
+      router.push(state.credentialInfo?.url);
     }
   }
 
@@ -131,7 +113,6 @@ export default function BoxyHQSetup() {
           </div>
         </div>
         <div className="flex w-full justify-center">
-          {/* <ProjectCreationForm form={props.creationForm} /> */}
           <Component form={creationForm} />
         </div>
         <div className="flex w-full justify-between">

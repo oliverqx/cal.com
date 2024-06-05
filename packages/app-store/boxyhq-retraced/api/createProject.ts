@@ -7,11 +7,12 @@ import { defaultResponder } from "@calcom/lib/server";
 
 import appConfig from "../config.json";
 import type { BoxyHqProject } from "../lib/boxysdk";
-import { boxyHQAuthenticate, createProject } from "../lib/boxysdk";
+import { boxyHQAuthenticate, boxyHqCreateTemplates, createProject } from "../lib/boxysdk";
 import { ZBoxyProjectCreationInput, getClientSafeAppCredential } from "../zod";
 
 export async function handler(req: NextApiRequest, res: NextApiResponse) {
   const session = req.session;
+  console.log({ session });
   if (!session || !session.user.email) {
     throw new HttpError({ statusCode: 401, message: "Unauthorized. User is missing email." });
   }
@@ -43,6 +44,7 @@ export async function handler(req: NextApiRequest, res: NextApiResponse) {
     environments: environments,
   };
 
+  let clientSafeAppCredential;
   try {
     const appCredential = await createDefaultInstallation({
       appType: appConfig.type,
@@ -60,14 +62,25 @@ export async function handler(req: NextApiRequest, res: NextApiResponse) {
       },
     });
 
-    const clientSafeAppCredential = getClientSafeAppCredential.parse(appCredential);
+    clientSafeAppCredential = getClientSafeAppCredential.parse(appCredential);
+  } catch (reason) {
+    return res.status(500).json({ message: "Could not add BoxyHQ Retraced app" });
+  }
+
+  try {
+    await boxyHqCreateTemplates(
+      boxyAuthenticationToken,
+      clientSafeAppCredential.key.projectId,
+      clientSafeAppCredential.key.endpoint,
+      clientSafeAppCredential.key.activeEnvironment
+    );
 
     return res.status(200).json({
       url: getInstalledAppPath({ variant: "auditLogs", slug: appConfig.slug }),
       ...clientSafeAppCredential,
     });
-  } catch (reason) {
-    return res.status(500).json({ message: "Could not add BoxyHQ Retraced app" });
+  } catch (e) {
+    return res.status(500).json({ message: e });
   }
 }
 

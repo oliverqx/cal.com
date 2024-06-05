@@ -1,13 +1,9 @@
 export enum BoxySetupStages {
   CREATION = "CREATION",
   CONFIRMATION = "CONFIRMATION",
-  TEMPLATE_CREATION = "TEMPLATE_CREATION",
 }
 
-export type BoxyHQCredentialState =
-  | BoxyHQCredentialConfirm
-  | BoxyHQCredentialTemplateCreation
-  | BoxyHQCredentialCreate;
+export type BoxyHQCredentialState = BoxyHQCredentialConfirm | BoxyHQCredentialCreate;
 
 export type BoxyHQCredentialConfirm = {
   boxyCredentialState: BoxySetupStages.CONFIRMATION;
@@ -23,28 +19,14 @@ export type BoxyHQCredentialCreate = {
   credentialInfo: undefined;
 };
 
-export type BoxyHQCredentialTemplateCreation = {
-  boxyCredentialState: BoxySetupStages.TEMPLATE_CREATION;
+export type Action = {
+  type: "credentialCreated";
+  payload: BoxyHQCredentialConfirm;
 };
 
-export type Action =
-  | {
-      type: "credentialCreated";
-      payload: BoxyHQCredentialConfirm;
-    }
-  | {
-      type: "creatingTemplates";
-      payload: BoxyHQCredentialTemplateCreation;
-    };
-
-export const reducer = (state: BoxyHQCredentialState, action: Action) => {
+export const reducer = (state: BoxyHQCredentialState, action: Action): BoxyHQCredentialState => {
   switch (action.type) {
     case "credentialCreated":
-      return {
-        ...state,
-        ...action.payload,
-      };
-    case "creatingTemplates":
       return {
         ...state,
         ...action.payload,
@@ -68,16 +50,6 @@ export const credentialCreated = (
     },
   };
 };
-
-export const creatingTemplates = (): Action => {
-  return {
-    type: "creatingTemplates",
-    payload: {
-      boxyCredentialState: BoxySetupStages.TEMPLATE_CREATION,
-    },
-  };
-};
-
 export const initialState: BoxyHQCredentialCreate = {
   boxyCredentialState: BoxySetupStages.CREATION as const,
   credentialInfo: undefined,
