@@ -12,7 +12,6 @@ import { ZBoxyProjectCreationInput, getClientSafeAppCredential } from "../zod";
 
 export async function handler(req: NextApiRequest, res: NextApiResponse) {
   const session = req.session;
-  console.log({ session });
   if (!session || !session.user.email) {
     throw new HttpError({ statusCode: 401, message: "Unauthorized. User is missing email." });
   }
