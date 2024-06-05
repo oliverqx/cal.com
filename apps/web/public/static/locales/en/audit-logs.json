@@ -45,8 +45,10 @@
   "settings_have_been_updated": "Settings have been successfully updated.",
   "credentials": "Credentials",
   "triggers": "Trigger Events",
-  "provide_auditlog_credentials": "BoxyHQ - Setup Credentials",
-  "generate_api_key_description": "Please provide all information below so Cal.com can connect to your Retraced project.",
+  "auditlog_credentials_title": "BoxyHQ - Setup Credentials",
+  "auditlog_credentials_description": "Please provide all information below so Cal.com can connect to your Retraced project.",
   "create_auditlog_templates": "BoxyHQ - Template Creation",
-  "create_auditLog_description": "Cal.com will create a set of default templates for all availble events. You will be able to edit them later."
+  "create_templates_description": "We're creating a set of default templates for all availble events. This might take a minute.",
+  "confirm_credentials_title": "BoxyHQ - Confirm Credentials",
+  "confirm_credentials_description": "This information will be used to report event to BoxyHQ Retraced. Please confirm everything is correct."
 }
