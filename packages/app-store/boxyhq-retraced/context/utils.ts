@@ -1,9 +1,13 @@
 export enum BoxySetupStages {
   CREATION = "CREATION",
   CONFIRMATION = "CONFIRMATION",
+  TEMPLATE_CREATION = "TEMPLATE_CREATION",
 }
 
-export type BoxyHQCredentialState = BoxyHQCredentialConfirm | BoxyHQCredentialCreate;
+export type BoxyHQCredentialState =
+  | BoxyHQCredentialConfirm
+  | BoxyHQCredentialTemplateCreation
+  | BoxyHQCredentialCreate;
 
 export type BoxyHQCredentialConfirm = {
   boxyCredentialState: BoxySetupStages.CONFIRMATION;
@@ -19,14 +23,28 @@ export type BoxyHQCredentialCreate = {
   credentialInfo: undefined;
 };
 
-export type Action = {
-  type: "afterCredentialCreation";
-  payload: BoxyHQCredentialConfirm;
+export type BoxyHQCredentialTemplateCreation = {
+  boxyCredentialState: BoxySetupStages.TEMPLATE_CREATION;
 };
+
+export type Action =
+  | {
+      type: "credentialCreated";
+      payload: BoxyHQCredentialConfirm;
+    }
+  | {
+      type: "creatingTemplates";
+      payload: BoxyHQCredentialTemplateCreation;
+    };
 
 export const reducer = (state: BoxyHQCredentialState, action: Action) => {
   switch (action.type) {
-    case "afterCredentialCreation":
+    case "credentialCreated":
+      return {
+        ...state,
+        ...action.payload,
+      };
+    case "creatingTemplates":
       return {
         ...state,
         ...action.payload,
@@ -37,13 +55,13 @@ export const reducer = (state: BoxyHQCredentialState, action: Action) => {
 };
 
 // Handlers
-export const afterCredentialCreationSetup = (
+export const credentialCreated = (
   credentialId: number,
   url: string,
   options: { label: string; value: string; key: string }[]
 ): Action => {
   return {
-    type: "afterCredentialCreation",
+    type: "credentialCreated",
     payload: {
       boxyCredentialState: BoxySetupStages.CONFIRMATION,
       credentialInfo: { credentialId, url, options },
@@ -51,7 +69,16 @@ export const afterCredentialCreationSetup = (
   };
 };
 
-export const initialState = {
+export const creatingTemplates = (): Action => {
+  return {
+    type: "creatingTemplates",
+    payload: {
+      boxyCredentialState: BoxySetupStages.TEMPLATE_CREATION,
+    },
+  };
+};
+
+export const initialState: BoxyHQCredentialCreate = {
   boxyCredentialState: BoxySetupStages.CREATION as const,
   credentialInfo: undefined,
 };
