@@ -11,6 +11,7 @@ const loginSuccessSchema = z.object({
 });
 
 export async function getBoxyHQKey(credentialId: number) {
+  console.log({ credentialId });
   const credential = await prisma.credential.findFirst({
     where: {
       id: credentialId,
@@ -82,6 +83,28 @@ export function boxyHqCreateTemplates(
     redirect: "follow" as const,
   };
 
+  return fetch(
+    `${endpoint}/admin/v1/project/${projectId}/templates?environment_id=${environmentId}`,
+    requestOptions
+  );
+}
+
+export function getBoxyTemplates(
+  boxyAdminKey: string,
+  projectId: string,
+  endpoint: string,
+  environmentId: string
+) {
+  const headers = new Headers();
+  headers.append("Authorization", boxyAdminKey);
+
+  const requestOptions = {
+    method: "GET",
+    headers: headers,
+    redirect: "follow" as const,
+  };
+
+  console.log({ endpoint, projectId, environmentId });
   return fetch(
     `${endpoint}/admin/v1/project/${projectId}/templates?environment_id=${environmentId}`,
     requestOptions
