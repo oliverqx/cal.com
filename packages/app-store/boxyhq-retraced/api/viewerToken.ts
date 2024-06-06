@@ -5,7 +5,7 @@ import { defaultResponder } from "@calcom/lib/server";
 import prisma from "@calcom/prisma";
 
 import AuditLogManager from "../lib/AuditLogManager";
-import { appKeysSchema } from "../zod";
+import { appKeysSchema, appSettingsSchema } from "../zod";
 
 const ZPingInputSchema = z.object({
   credentialId: z.number(),
@@ -21,7 +21,8 @@ export async function handler(req: NextApiRequest, res: NextApiResponse) {
   });
 
   const appKeys = appKeysSchema.parse(data?.key);
-  const auditLogManager = new AuditLogManager(appKeys);
+  const appSettings = appSettingsSchema.parse(data?.settings);
+  const auditLogManager = new AuditLogManager(appKeys, appSettings);
 
   try {
     const token = await auditLogManager.client?.getViewerToken("default", "", true);
