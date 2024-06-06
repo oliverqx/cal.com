@@ -27,7 +27,7 @@ function Interface() {
   if (isLoading) return null;
 
   return (
-    <div className="align-right space-y-4 px-4 pb-4 pt-4 text-sm">
+    <div className="align-right space-y-4 px-4 pb-10 pt-4">
       <div className="items-between flex space-x-4">
         <div className="flex w-[25%] flex-col space-y-4">
           <AuditSystemStatus />

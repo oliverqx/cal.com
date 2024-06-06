@@ -69,23 +69,6 @@ export const CredentialsForm = (props: CredentialsFormProps) => {
         )}
       />
       <Controller
-        name="endpoint"
-        control={props.form.control}
-        render={({ field: { onBlur, onChange, value } }) => (
-          <div className="col-span-4 col-start-2 row-start-2 flex flex-row items-end space-x-5">
-            <InputField
-              required
-              onChange={onChange}
-              onBlur={onBlur}
-              value={value}
-              name="Endpoint"
-              className="mb-1"
-              containerClassName="w-[100%]"
-            />
-          </div>
-        )}
-      />
-      <Controller
         name="activeEnvironment"
         control={props.form.control}
         render={({ field: { onBlur, onChange, value } }) => {
@@ -103,19 +86,36 @@ export const CredentialsForm = (props: CredentialsFormProps) => {
                   onBlur={onBlur}
                   name="Active Environment"
                 />{" "}
-                {props.hideBtn ?? (
-                  <Button
-                    data-dirty={props.form.formState.isDirty}
-                    className="mb-1 data-[dirty=false]:hidden "
-                    loading={loading}
-                    type="submit">
-                    Submit
-                  </Button>
-                )}
               </div>
             </div>
           );
         }}
+      />
+      <Controller
+        name="endpoint"
+        control={props.form.control}
+        render={({ field: { onBlur, onChange, value } }) => (
+          <div className="col-span-4 col-start-2 row-start-2 flex flex-row items-end space-x-5">
+            <InputField
+              required
+              onChange={onChange}
+              onBlur={onBlur}
+              value={value}
+              name="Endpoint"
+              className="mb-1"
+              containerClassName="w-[100%]"
+            />{" "}
+            {props.hideBtn ?? (
+              <Button
+                data-dirty={props.form.formState.isDirty}
+                className="mb-1 data-[dirty=false]:hidden "
+                loading={loading}
+                type="submit">
+                Submit
+              </Button>
+            )}
+          </div>
+        )}
       />
     </Form>
   );
