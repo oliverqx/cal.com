@@ -10,7 +10,7 @@ import AuditLogManager from "../lib/AuditLogManager";
 import { appKeysSchema, appSettingsSchema } from "../zod";
 
 const pingEvent: Retraced.Event = {
-  action: "SYSTEM.PING",
+  action: "SYSTEM_PING",
   actor: {
     id: "-1",
     name: "App interface",
