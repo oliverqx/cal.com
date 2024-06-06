@@ -4,3 +4,4 @@ export { default as viewerToken } from "./viewerToken";
 export { default as createTemplates } from "./createTemplates";
 export { default as createProject } from "./createProject";
 export { default as getTemplates } from "./getTemplates";
+export { default as updateTemplate } from "./updateTemplate";
