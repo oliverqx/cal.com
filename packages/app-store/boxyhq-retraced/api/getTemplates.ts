@@ -8,7 +8,7 @@ import { boxyHQAuthenticate, getBoxyHQKey, getBoxyTemplates } from "../lib/boxys
 
 const ZPingInputSchema = z.object({
   credentialId: z.number(),
-  adminRootToken: z.string(),
+  sudoKey: z.string(),
 });
 
 export async function handler(req: NextApiRequest, res: NextApiResponse) {
@@ -16,11 +16,11 @@ export async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (!session || !session.user.email) {
     throw new HttpError({ statusCode: 401, message: "Unauthorized. User is missing email." });
   }
-  const { credentialId, adminRootToken } = ZPingInputSchema.parse(req.body);
+  const { credentialId, sudoKey } = ZPingInputSchema.parse(req.body);
   const boxyHqKey = await getBoxyHQKey(credentialId);
 
   // Admin key is needed to edit templates.
-  const boxyAdminKey = await boxyHQAuthenticate(adminRootToken, boxyHqKey.endpoint, session.user.email);
+  const boxyAdminKey = await boxyHQAuthenticate(sudoKey, boxyHqKey.endpoint, session.user.email);
 
   try {
     const response = await (

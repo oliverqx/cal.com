@@ -8,6 +8,7 @@ import { defaultResponder } from "@calcom/lib/server";
 import appConfig from "../config.json";
 import type { BoxyHqProject } from "../lib/boxysdk";
 import { boxyHQAuthenticate, boxyHqCreateTemplates, createProject } from "../lib/boxysdk";
+import { AuditLogDefaultTemplates } from "../lib/constants";
 import { ZBoxyProjectCreationInput, getClientSafeAppCredential } from "../zod";
 
 export async function handler(req: NextApiRequest, res: NextApiResponse) {
@@ -67,12 +68,13 @@ export async function handler(req: NextApiRequest, res: NextApiResponse) {
   }
 
   try {
-    await boxyHqCreateTemplates(
-      boxyAuthenticationToken,
-      clientSafeAppCredential.key.projectId,
-      clientSafeAppCredential.key.endpoint,
-      clientSafeAppCredential.key.activeEnvironment
-    );
+    await boxyHqCreateTemplates({
+      boxyAdminKey: boxyAuthenticationToken,
+      projectId: clientSafeAppCredential.key.projectId,
+      endpoint: clientSafeAppCredential.key.endpoint,
+      environmentId: clientSafeAppCredential.key.activeEnvironment,
+      templates: AuditLogDefaultTemplates,
+    });
 
     return res.status(200).json({
       url: getInstalledAppPath({ variant: "auditLogs", slug: appConfig.slug }),
