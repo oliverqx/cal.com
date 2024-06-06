@@ -9,15 +9,14 @@ import { Button, showToast } from "@calcom/ui";
 
 import appConfig from "../config.json";
 import { useAppCredential } from "../context/CredentialContext";
-import type { BoxyGeneralSettingsOption } from "../lib/utils";
+import type { ResetSettingsOption } from "../lib/utils";
 import { AdminKeyForm } from "./AdminKeyForm";
 import PreAdminActionDialog from "./PreAdminActionDialog";
 
-export const BoxyHQTemplatesSettingsOptionCard = ({ option }: { option: BoxyGeneralSettingsOption }) => {
+export const ResetTemplatesCard = ({ option }: { option: ResetSettingsOption }) => {
   const [animationRef] = useAutoAnimate<HTMLDivElement>();
-  const { data, isLoading, credentialId } = useAppCredential();
+  const { credentialId } = useAppCredential();
   const [isOpen, setOpen] = useState(false);
-  const [isPending, setIsPending] = useState(false);
   function handleOpenChange() {
     setOpen((isOpen) => !isOpen);
   }
@@ -26,9 +25,9 @@ export const BoxyHQTemplatesSettingsOptionCard = ({ option }: { option: BoxyGene
     resolver: zodResolver(z.object({ adminKey: z.string().min(1) })),
   });
 
-  const mutation = useMutation({
+  const { mutate: resetTemplates, isPending } = useMutation({
     mutationFn: async ({ adminKey }: { adminKey: string }) => {
-      const response = await fetch(`/api/integrations/${appConfig.slug}/createTemplates`, {
+      const response = await fetch(`/api/integrations/${appConfig.slug}/resetTemplates`, {
         method: "post",
         headers: { "Content-type": "application/json" },
         body: JSON.stringify({
@@ -61,10 +60,7 @@ export const BoxyHQTemplatesSettingsOptionCard = ({ option }: { option: BoxyGene
         isLoading={isPending}
         onConfirm={(e) => console.log("This function will be removed later.")}
         confirmBtn={
-          <Button
-            type="submit"
-            disabled={isLoading}
-            onClick={form.handleSubmit((values) => mutation.mutate(values))}>
+          <Button type="submit" onClick={form.handleSubmit((values) => resetTemplates(values))}>
             Confirm
           </Button>
         }>
@@ -80,9 +76,7 @@ export const BoxyHQTemplatesSettingsOptionCard = ({ option }: { option: BoxyGene
           </div>
         </div>
         <div ref={animationRef} className="p-4">
-          <Button onClick={() => setOpen(true)} disabled={data?.isInvalid ?? false}>
-            {isLoading ? "Loading..." : option.button}
-          </Button>
+          <Button onClick={() => setOpen(true)}>{option.button}</Button>
         </div>
       </div>
     </>
