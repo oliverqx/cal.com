@@ -43,13 +43,6 @@ export const getClientSafeAppCredential = Credential.extend({
 });
 export type ClientSafeAppCredential = z.infer<typeof getClientSafeAppCredential>;
 
-export const appCredentialSchema = Credential.extend({
-  key: appKeysSchema,
-  settings: appSettingsSchema,
-});
-
-export type BoxyCredential = z.infer<typeof appCredentialSchema>;
-
 export const appSettingsFormSchema = z.object({
   activeEnvironment: z.object({ key: z.string(), label: z.string(), value: z.string() }),
   projectName: z.string(),
