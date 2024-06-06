@@ -1,8 +1,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useQuery, useMutation } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import type { Dispatch } from "react";
-import { useState, Fragment } from "react";
-import { useReducer } from "react";
+import { useState, Fragment, useEffect } from "react";
 import { Controller } from "react-hook-form";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -74,13 +73,7 @@ export const AuditLogEventToggles = () => {
     }
   }
 
-  const [editing, updateEditing] = useReducer(
-    (data: { isOpen: boolean; activeTemplate: string | null }, p: any) => ({ ...data, ...p }),
-    {
-      isOpen: false,
-      activeTemplate: "BOOKING_CREATED",
-    }
-  );
+  const [activeTemplate, setActiveTemplate] = useState<undefined | string>(undefined);
 
   const {
     data: status,
@@ -106,9 +99,9 @@ export const AuditLogEventToggles = () => {
       templates.map((template: any) => templateMap.set(template.name, template));
 
       if (response.status === 200) {
-        showToast("Ping successful. Audit Logging integration is healthy.", "success");
+        showToast("Templates retrieved successfully.", "success");
       } else {
-        showToast("Ping failed. Please ensure your credentials are valid.", "error");
+        showToast("Templates retrieval failed. Please ensure your credentials are valid.", "error");
       }
 
       return templateMap;
@@ -117,16 +110,24 @@ export const AuditLogEventToggles = () => {
     refetchOnWindowFocus: false,
   });
 
-  const updateTemplateMutation = useMutation({
+  useEffect(() => {
+    if (activeTemplate) {
+      form.reset({ template: status?.get(activeTemplate)?.template });
+    }
+  }, [status, activeTemplate]);
+
+  const queryClient = useQueryClient();
+  const { mutate: updateTemplateMutation, isPending } = useMutation({
     mutationFn: async ({ template }: { template: string }) => {
+      if (!activeTemplate) return;
       const l = {
         projectId: data.key.projectId,
-        templateId: status?.get(editing.activeTemplate)?.id,
+        templateId: status?.get(activeTemplate)?.id,
         environmentId: data.key.activeEnvironment,
         sudoKey: "dev",
         endpoint: data.key.endpoint,
         newTemplate: template,
-        eventTriggerToMatch: editing.activeTemplate,
+        eventTriggerToMatch: activeTemplate,
       };
 
       const response = await fetch(`/api/integrations/${appConfig.slug}/updateTemplate`, {
@@ -149,6 +150,11 @@ export const AuditLogEventToggles = () => {
         lastCheck: new Date().toLocaleString(),
       };
     },
+    // make sure to _return_ the Promise from the query invalidation
+    // so that the mutation stays in `pending` state until the refetch is finished
+    onSettled: async () => {
+      return await queryClient.invalidateQueries({ queryKey: ["getTemplates", credentialId.toString()] });
+    },
   });
 
   const form = useForm<{ template: string }>({
@@ -156,14 +162,11 @@ export const AuditLogEventToggles = () => {
   });
 
   function setFormValue(triggerEvent: string) {
-    updateEditing({ isOpen: true, activeTemplate: triggerEvent });
-    form.reset({ template: status?.get(triggerEvent)?.template });
+    setActiveTemplate(triggerEvent);
   }
 
   function submitUpdateTemplate() {
-    form.handleSubmit(async (values) => {
-      await updateTemplateMutation.mutate(values);
-    })();
+    form.handleSubmit(async (values) => updateTemplateMutation(values))();
   }
 
   return (
@@ -193,13 +196,12 @@ export const AuditLogEventToggles = () => {
                 return (
                   <Fragment key={key}>
                     <EventSettings
-                      editing={editing.isOpen}
+                      isLoading={isPending}
                       setFormValue={setFormValue}
                       triggerEvent={triggerEvent}
                       disabled={disabledEvents.has(triggerEvent)}
                       handleEventToggle={handleEventToggle}
-                      templates={status}
-                      activeTemplate={editing.activeTemplate}
+                      activeTemplate={activeTemplate}
                       form={form}
                       submitUpdateTemplate={submitUpdateTemplate}
                     />
@@ -229,25 +231,24 @@ function EventSettings({
   disabled,
   handleEventToggle,
   setFormValue,
-  editing,
-  templates,
   activeTemplate,
   form,
   submitUpdateTemplate,
+  isLoading,
 }: {
   triggerEvent: any;
   disabled: boolean;
   handleEventToggle: any;
   setFormValue: Dispatch<any>;
-  editing: boolean;
-  templates: Map<any, any>;
-  activeTemplate: string;
+  activeTemplate: string | undefined;
   form: any;
   submitUpdateTemplate: any;
+  isLoading: boolean;
 }) {
   const { t: tAuditLogs } = useLocale("audit-logs");
   const { t } = useLocale();
 
+  const isActive = activeTemplate === triggerEvent;
   return (
     <li className="hover:bg-muted group relative flex flex-col items-center  justify-between p-6 ">
       <div className="flex w-[100%] items-center justify-between">
@@ -285,7 +286,7 @@ function EventSettings({
           />
         </div>
       </div>
-      {editing ? (
+      {isActive ? (
         <div className="mt-[30px] w-full">
           <Form
             form={form}
@@ -310,7 +311,7 @@ function EventSettings({
                   <Button
                     data-dirty={form.formState.isDirty}
                     className="mb-1 data-[dirty=false]:hidden "
-                    // loading={loading}
+                    loading={isLoading}
                     onClick={() => submitUpdateTemplate()}>
                     Submit
                   </Button>
