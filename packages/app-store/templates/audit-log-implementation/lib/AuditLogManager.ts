@@ -7,17 +7,22 @@ import type {
 import logger from "@calcom/lib/logger";
 
 import config from "../config.json";
-import type { AppKeys } from "../zod";
+import type { AppKeys, AppSettings } from "../zod";
 
 const log = logger.getSubLogger({ prefix: ["AuditLogManager", config.slug] });
 export default class GenericAuditLogManager implements AuditLogsManager {
   private client: undefined | GenericAuditLogClient;
 
-  constructor(appKeys: AppKeys) {
+  constructor(appKeys: AppKeys, appSettings: AppSettings) {
     log.silly("Initializing GenericAuditLogManager");
 
     // This is where your audit log client goes. Should be edited.
-    this.client = getGenericAuditLogClient(appKeys.apiKey, appKeys.projectId, appKeys.endpoint);
+    this.client = getGenericAuditLogClient(
+      appKeys.apiKey,
+      appKeys.projectId,
+      appKeys.endpoint,
+      appSettings.disabledEvents
+    );
   }
 
   public async reportEvent(event: AuditLogEvent) {

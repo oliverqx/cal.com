@@ -11,8 +11,9 @@ export type AppKeys = z.infer<typeof appKeysSchema>;
 export const appDataSchema = z.object({});
 
 export const appSettingsSchema = z.object({
-  disabledEvents: z.array(z.string()),
-  templateSetup: z.boolean(),
+  disabledEvents: z.array(z.enum(["AuditLogBookingTriggerEvents"])),
 });
+
+export type AppSettings = z.infer<typeof appSettingsSchema>;
 
 export type CredentialSettings = z.infer<typeof appSettingsSchema>;
