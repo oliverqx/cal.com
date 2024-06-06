@@ -1,6 +1,6 @@
 import { AuditLogBookingTriggerEvents, AuditLogSystemTriggerEvents } from "@calcom/prisma/enums";
 
-type BoxyHQTemplate = {
+export type BoxyHQTemplate = {
   name: string;
   rule: BoxyHQTemplateRule[];
   template: string;
@@ -17,7 +17,7 @@ const RULE = {
   path: "action",
 };
 
-function getDefaultTemplate({
+export function getDefaultTemplate({
   eventTriggerToMatch,
   template,
 }: {

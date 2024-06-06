@@ -4,7 +4,7 @@ import prisma from "@calcom/prisma";
 
 import config from "../config.json";
 import { appKeysSchema } from "../zod";
-import { AuditLogDefaultTemplates } from "./constants";
+import type { BoxyHQTemplate } from "./constants";
 
 const loginSuccessSchema = z.object({
   token: z.string(),
@@ -64,17 +64,24 @@ export async function boxyHQAuthenticate(adminToken: string, endpoint: string, e
   return login.token;
 }
 
-export function boxyHqCreateTemplates(
-  boxyAdminKey: string,
-  projectId: string,
-  endpoint: string,
-  environmentId: string
-) {
+export function boxyHqCreateTemplates({
+  boxyAdminKey,
+  projectId,
+  endpoint,
+  environmentId,
+  templates,
+}: {
+  boxyAdminKey: string;
+  projectId: string;
+  endpoint: string;
+  environmentId: string;
+  templates: BoxyHQTemplate[];
+}) {
   const headers = new Headers();
   headers.append("Authorization", boxyAdminKey);
   headers.append("Content-Type", "application/json");
 
-  const body = JSON.stringify({ templates: AuditLogDefaultTemplates });
+  const body = JSON.stringify({ templates: templates });
 
   const requestOptions = {
     method: "POST",
@@ -104,9 +111,30 @@ export function getBoxyTemplates(
     redirect: "follow" as const,
   };
 
-  console.log({ endpoint, projectId, environmentId });
   return fetch(
     `${endpoint}/admin/v1/project/${projectId}/templates?environment_id=${environmentId}`,
+    requestOptions
+  );
+}
+
+export function deleteBoxyTemplate(
+  boxyAdminKey: string,
+  projectId: string,
+  endpoint: string,
+  templateId: string,
+  environmentId: string
+) {
+  const headers = new Headers();
+  headers.append("Authorization", boxyAdminKey);
+
+  const requestOptions = {
+    method: "DELETE",
+    headers: headers,
+    redirect: "follow" as const,
+  };
+
+  return fetch(
+    `${endpoint}/admin/v1/project/${projectId}/templates/${templateId}?environment_id=${environmentId}`,
     requestOptions
   );
 }
