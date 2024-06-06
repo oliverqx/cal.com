@@ -6,6 +6,7 @@ import { Controller } from "react-hook-form";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
+import type { AvailableTriggerEventsType } from "@calcom/features/audit-logs/constants";
 import { availableTriggerEvents, availableTriggerTargets } from "@calcom/features/audit-logs/constants";
 import { useLocale } from "@calcom/lib/hooks/useLocale";
 import type { AuditLogTriggerTargets } from "@calcom/prisma/enums";
@@ -76,11 +77,7 @@ export const AuditLogEventToggles = () => {
   // Template editing related
   const [activeTemplate, setActiveTemplate] = useState<undefined | string>(undefined);
 
-  const {
-    data: status,
-    isLoading: isLoading,
-    refetch: refetchStatus,
-  } = useQuery({
+  const { data: status } = useQuery({
     queryKey: ["getTemplates", credentialId.toString()],
     queryFn: async () => {
       const response = await fetch(`/api/integrations/${appConfig.slug}/getTemplates`, {
@@ -97,7 +94,7 @@ export const AuditLogEventToggles = () => {
       const templates = body.message.templates;
 
       const templateMap: Map<string, BoxyTemplate> = new Map();
-      templates.map((template: any) => templateMap.set(template.name, template));
+      templates.map((template: BoxyTemplate) => templateMap.set(template.name, template));
 
       if (response.status === 200) {
         showToast("Templates retrieved successfully.", "success");
@@ -188,26 +185,28 @@ export const AuditLogEventToggles = () => {
 
         <ul className="border-subtle divide-subtle my-4 h-[350px] divide-y overflow-scroll rounded-md border">
           {typeof status !== undefined && status
-            ? Object.values(availableTriggerEvents[value.key]).map((triggerEvent, key) => {
-                if (!status) {
-                  return null;
-                }
+            ? Object.values(availableTriggerEvents[value.key]).map(
+                (triggerEvent: AvailableTriggerEventsType, key) => {
+                  if (!status) {
+                    return null;
+                  }
 
-                return (
-                  <Fragment key={key}>
-                    <EventSettings
-                      isLoading={isPending}
-                      setFormValue={setFormValue}
-                      triggerEvent={triggerEvent}
-                      disabled={disabledEvents.has(triggerEvent)}
-                      handleEventToggle={handleEventToggle}
-                      activeTemplate={activeTemplate}
-                      form={form}
-                      submitUpdateTemplate={submitUpdateTemplate}
-                    />
-                  </Fragment>
-                );
-              })
+                  return (
+                    <Fragment key={key}>
+                      <EventSettings
+                        isLoading={isPending}
+                        setFormValue={setFormValue}
+                        triggerEvent={triggerEvent}
+                        disabled={disabledEvents.has(triggerEvent)}
+                        handleEventToggle={handleEventToggle}
+                        activeTemplate={activeTemplate}
+                        form={form}
+                        submitUpdateTemplate={submitUpdateTemplate}
+                      />
+                    </Fragment>
+                  );
+                }
+              )
             : null}
         </ul>
       </div>
@@ -236,7 +235,7 @@ function EventSettings({
   submitUpdateTemplate,
   isLoading,
 }: {
-  triggerEvent: any;
+  triggerEvent: AvailableTriggerEventsType;
   disabled: boolean;
   handleEventToggle: any;
   setFormValue: Dispatch<any>;
@@ -246,7 +245,6 @@ function EventSettings({
   isLoading: boolean;
 }) {
   const { t: tAuditLogs } = useLocale("audit-logs");
-  const { t } = useLocale();
 
   const isActive = activeTemplate === triggerEvent;
   return (
