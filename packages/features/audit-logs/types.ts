@@ -1,4 +1,4 @@
-import type { AppKeys } from "@calcom/app-store/templates/audit-log-implementation/zod";
+import type { AppKeys, AppSettings } from "@calcom/app-store/templates/audit-log-implementation/zod";
 import type { IconName } from "@calcom/ui";
 
 export interface AuditLogsManager {
@@ -79,6 +79,6 @@ export interface GeneralSettingsOption {
 }
 
 export type GenericAuditLogClient = {
-  credentials: AppKeys;
+  credentials: AppKeys & AppSettings;
   reportEvent: (event: AuditLogEvent) => void;
 };
