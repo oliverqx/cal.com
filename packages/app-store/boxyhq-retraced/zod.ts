@@ -38,8 +38,10 @@ export const getClientSafeAppCredential = Credential.extend({
   settings: z.object({
     projectName: z.string(),
     environments: z.record(boxyHqEnvironmentSchema.omit({ token: true })),
+    disabledEvents: z.array(z.string()).default([]),
   }),
 });
+export type ClientSafeAppCredential = z.infer<typeof getClientSafeAppCredential>;
 
 export const appCredentialSchema = Credential.extend({
   key: appKeysSchema,

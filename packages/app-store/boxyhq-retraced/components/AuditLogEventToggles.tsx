@@ -10,7 +10,7 @@ import { availableTriggerEvents, availableTriggerTargets } from "@calcom/feature
 import { useLocale } from "@calcom/lib/hooks/useLocale";
 import type { AuditLogTriggerTargets } from "@calcom/prisma/enums";
 import { trpc } from "@calcom/trpc";
-import { Badge, Switch, Select, Icon, Button } from "@calcom/ui";
+import { Switch, Select, Icon, Button } from "@calcom/ui";
 import { showToast } from "@calcom/ui";
 import { Form, InputField } from "@calcom/ui";
 
@@ -73,6 +73,7 @@ export const AuditLogEventToggles = () => {
     }
   }
 
+  // Template editing related
   const [activeTemplate, setActiveTemplate] = useState<undefined | string>(undefined);
 
   const {
@@ -110,30 +111,33 @@ export const AuditLogEventToggles = () => {
     refetchOnWindowFocus: false,
   });
 
+  const form = useForm<{ template: string }>({
+    resolver: zodResolver(z.object({ template: z.string() })),
+  });
+
   useEffect(() => {
     if (activeTemplate) {
       form.reset({ template: status?.get(activeTemplate)?.template });
     }
-  }, [status, activeTemplate]);
+  }, [status, activeTemplate, form]);
 
   const queryClient = useQueryClient();
+
   const { mutate: updateTemplateMutation, isPending } = useMutation({
     mutationFn: async ({ template }: { template: string }) => {
-      if (!activeTemplate) return;
-      const l = {
-        projectId: data.key.projectId,
-        templateId: status?.get(activeTemplate)?.id,
-        environmentId: data.key.activeEnvironment,
-        sudoKey: "dev",
-        endpoint: data.key.endpoint,
-        newTemplate: template,
-        eventTriggerToMatch: activeTemplate,
-      };
-
+      if (!activeTemplate || !data) return;
       const response = await fetch(`/api/integrations/${appConfig.slug}/updateTemplate`, {
         method: "POST",
         headers: { "Content-type": "application/json" },
-        body: JSON.stringify(l),
+        body: JSON.stringify({
+          projectId: data.key.projectId,
+          templateId: status?.get(activeTemplate)?.id,
+          environmentId: data.key.activeEnvironment,
+          sudoKey: "dev",
+          endpoint: data.key.endpoint,
+          newTemplate: template,
+          eventTriggerToMatch: activeTemplate,
+        }),
       });
 
       if (response.status === 200) {
@@ -155,10 +159,6 @@ export const AuditLogEventToggles = () => {
     onSettled: async () => {
       return await queryClient.invalidateQueries({ queryKey: ["getTemplates", credentialId.toString()] });
     },
-  });
-
-  const form = useForm<{ template: string }>({
-    resolver: zodResolver(z.object({ template: z.string() })),
   });
 
   function setFormValue(triggerEvent: string) {
@@ -257,11 +257,6 @@ function EventSettings({
             <div className="text-default text-sm font-semibold ltr:mr-2 rtl:ml-2">
               <span>{tAuditLogs(`events.${triggerEvent}.title`)}</span>
             </div>
-            <div className="flex items-center space-x-2">
-              <Badge variant="grayWithoutHover" data-testid={true ? "required" : "optional"}>
-                {t("optional")}
-              </Badge>
-            </div>
           </div>
           <p className="text-subtle max-w-[280px] break-words pt-1 text-sm sm:max-w-[500px]">
             {tAuditLogs(`events.${triggerEvent}.description`)}
@@ -275,7 +270,7 @@ function EventSettings({
             data-testid="icon-component"
           />
           <Switch
-            checked={disabled}
+            checked={!disabled}
             onCheckedChange={(checked) => {
               handleEventToggle(checked, triggerEvent);
             }}

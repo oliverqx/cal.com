@@ -6,20 +6,12 @@ import { z } from "zod";
 
 import { trpc } from "@calcom/trpc";
 
-import type { AppSettingsForm } from "../zod";
+import type { AppSettingsForm, ClientSafeAppCredential } from "../zod";
 import { appKeysSchema, boxyHqEnvironmentSchema, getClientSafeAppCredential } from "../zod";
 
 const AuditLogCredentialContext = createContext<
   | {
-      data:
-        | {
-            apiKey?: string;
-            endpoint?: string;
-            projectId?: string;
-            settings?: any;
-            isInvalid?: boolean | null;
-          }
-        | undefined;
+      data: ClientSafeAppCredential | undefined;
       isLoading: boolean;
       credentialId: number;
       form: UseFormReturn<AppSettingsForm, any>;
@@ -50,12 +42,13 @@ export const AuditLogCredentialProvider = ({
     resolver: zodResolver(appKeysSchema),
   });
 
-  // This is credential data.
-  const { data, isLoading } = trpc.viewer.appCredentialById.useQuery({
-    id: credentialId,
-  });
+  // This holds credential data.
+  const { data, isLoading }: { data: ClientSafeAppCredential | undefined; isLoading: boolean } =
+    trpc.viewer.appCredentialById.useQuery({
+      id: credentialId,
+    });
 
-  // This is about available environment options
+  // This holds all ailable environment options
   const [options, setOptions] = useState<{ label: string; value: string; key: string }[]>([
     {
       label: "none",
@@ -64,7 +57,7 @@ export const AuditLogCredentialProvider = ({
     },
   ]);
 
-  // This is about mounting the credential data once its been received
+  // This is processing necessary credential data once its been received
   useEffect(() => {
     if (isLoading === false && data) {
       const {
