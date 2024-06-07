@@ -8,7 +8,7 @@ import { AuditLogViewer } from "./AuditLogViewer";
 import { AuditSystemStatus } from "./AuditSystemStatus";
 import { NavigationPanel } from "./NavigationPanel";
 import { EventSettingsGuard } from "./event-settings/EventSettingsGuard";
-import { CredentialsForm } from "./forms/CredentialsForm";
+import { AppKeyForm } from "./forms/C./forms/AppKeyForm";
 import { GeneralSettings } from "./general-settings/GeneralSettings";
 
 export default function AppSettings(props: { credentialId: number }) {
@@ -55,6 +55,6 @@ function renderPanel(activePanel: string | null) {
 
     // DefaultAppSettingsOptions.CREDENTIALS
     default:
-      return <CredentialsForm />;
+      return <AppKeyForm />;
   }
 }

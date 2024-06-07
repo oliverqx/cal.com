@@ -7,15 +7,15 @@ import { trpc } from "@calcom/trpc";
 import { showToast } from "@calcom/ui";
 
 import type { BoxyTemplate } from "../components/event-settings/EventSettingsInterface";
-import type { BoxyCredentialsForm } from "../components/forms/CredentialsForm";
+import type { BoxyAppKeyForm } from "../components/forms/AppKeyForm";
 import appConfig from "../config.json";
-import type { ClientSafeAppCredential } from "../zod";
+import type { ClientSafeAppCredential, BoxyEnvironmentSchema } from "../zod";
 import { boxyHqEnvironmentSchema, getClientSafeAppCredential } from "../zod";
 
 const AuditLogCredentialContext = createContext<
   | {
       data: ClientSafeAppCredential | undefined;
-      credentialData: BoxyCredentialsForm | undefined;
+      appKey: BoxyAppKeyForm | undefined;
       isLoading: boolean;
       credentialId: number;
       options: {
@@ -26,6 +26,7 @@ const AuditLogCredentialContext = createContext<
       sudoKey: string | undefined;
       setSudoKey: Dispatch<SetStateAction<string | undefined>>;
       isFetchingTemplates: boolean;
+      environments: Record<string, Omit<BoxyEnvironmentSchema, "token">> | undefined;
       templates: Map<string, BoxyTemplate> | undefined;
     }
   | undefined
@@ -59,7 +60,8 @@ export const AuditLogCredentialProvider = ({
     },
   ]);
 
-  const [credentialData, setCredentialData] = useState<BoxyCredentialsForm>();
+  const [appKey, setAppKey] = useState<BoxyAppKeyForm>();
+  const [environments, setEnvironments] = useState<Record<string, Omit<BoxyEnvironmentSchema, "token">>>();
 
   // This is processing necessary credential data once its been received
   useEffect(() => {
@@ -71,17 +73,17 @@ export const AuditLogCredentialProvider = ({
 
       const parsedEnvironment = boxyEnvironmentTransformer.parse(environments);
 
-      setCredentialData({
+      setAppKey({
         activeEnvironment: parsedEnvironment[activeEnvironmentId],
         projectName,
         endpoint,
       });
       setOptions(Object.values(parsedEnvironment));
+      setEnvironments(environments);
     }
   }, [isLoading, data]);
 
   const [sudoKey, setSudoKey] = useState<string | undefined>();
-
   const { data: templates, isLoading: isFetchingTemplates } = useQuery({
     queryKey: ["getTemplates", credentialId.toString()],
     queryFn: async () => {
@@ -118,13 +120,14 @@ export const AuditLogCredentialProvider = ({
     <AuditLogCredentialContext.Provider
       value={{
         data,
-        credentialData,
+        appKey,
         isLoading,
         credentialId,
         options,
         sudoKey,
         setSudoKey,
         templates,
+        environments,
         isFetchingTemplates,
       }}>
       {children}
