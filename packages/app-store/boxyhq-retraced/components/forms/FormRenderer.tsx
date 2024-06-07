@@ -3,9 +3,21 @@ import { forwardRef, useImperativeHandle } from "react";
 import { Controller } from "react-hook-form";
 import { useForm } from "react-hook-form";
 
-import { Form, PasswordField, InputField, Skeleton, Select, Label } from "@calcom/ui";
+import { Form, PasswordField, InputField, Skeleton, Select, Label, Button } from "@calcom/ui";
 
-const FormFieldRenderer = ({ element, form }: { element: any; form: any }) => {
+const FormFieldRenderer = ({
+  element,
+  form,
+  isLoading,
+  isLast,
+  showInternalButton,
+}: {
+  element: any;
+  form: any;
+  isLoading?: boolean;
+  isLast?: boolean;
+  showInternalButton?: boolean;
+}) => {
   switch (element.type) {
     case "password": {
       return (
@@ -23,6 +35,15 @@ const FormFieldRenderer = ({ element, form }: { element: any; form: any }) => {
                   className="mb-0"
                   containerClassName="w-[100%] data-[dirty=true]:w-[90%] duration-300"
                 />{" "}
+                {isLast && showInternalButton && (
+                  <Button
+                    type="submit"
+                    data-dirty={form.formState.isDirty}
+                    className="mb-1 data-[dirty=false]:hidden "
+                    loading={isLoading}>
+                    Submit
+                  </Button>
+                )}
               </div>
             );
           }}
@@ -45,6 +66,15 @@ const FormFieldRenderer = ({ element, form }: { element: any; form: any }) => {
                 className="mb-1"
                 containerClassName="w-[100%]"
               />
+              {isLast && showInternalButton && (
+                <Button
+                  type="submit"
+                  data-dirty={form.formState.isDirty}
+                  className="mb-1 data-[dirty=false]:hidden "
+                  loading={isLoading}>
+                  Submit
+                </Button>
+              )}
             </div>
           )}
         />
@@ -69,6 +99,15 @@ const FormFieldRenderer = ({ element, form }: { element: any; form: any }) => {
                     onChange={onChange}
                     onBlur={onBlur}
                   />{" "}
+                  {isLast && showInternalButton && (
+                    <Button
+                      type="submit"
+                      data-dirty={form.formState.isDirty}
+                      className="mb-0 data-[dirty=false]:hidden "
+                      loading={isLoading}>
+                      Submit
+                    </Button>
+                  )}
                 </div>
               </div>
             );
@@ -88,11 +127,15 @@ export const FormRenderer = forwardRef(
       FormZodSchema,
       onSubmit,
       defaultValues,
+      isLoading,
+      showInternalButton,
     }: {
       fields: any[];
       FormZodSchema: any;
       onSubmit: any;
       defaultValues?: any;
+      isLoading?: boolean;
+      showInternalButton?: boolean;
     },
     ref
   ) => {
@@ -101,16 +144,17 @@ export const FormRenderer = forwardRef(
       defaultValues: defaultValues,
     });
     const handleSubmit = form.handleSubmit(onSubmit);
+    const reset = form.reset;
 
     useImperativeHandle(ref, () => ({
       submit() {
         handleSubmit();
       },
-      reset() {
-        form.reset;
+      reset(values: any) {
+        reset(values);
       },
       getValues() {
-        form.getValues();
+        return form.getValues();
       },
       isDirty: form.formState.isDirty,
     }));
@@ -118,10 +162,17 @@ export const FormRenderer = forwardRef(
     return (
       <Form
         form={form}
-        handleSubmit={() => form.handleSubmit((e) => onSubmit(e))}
+        handleSubmit={handleSubmit}
         className="flex w-[100%] flex-col justify-between space-y-4">
-        {fields.map((element: any, index: any) => (
-          <FormFieldRenderer key={index} element={element} form={form} />
+        {fields.map((element: any, index: any, { length }) => (
+          <FormFieldRenderer
+            key={index}
+            element={element}
+            form={form}
+            isLast={length - 1 === index}
+            isLoading={isLoading}
+            showInternalButton={showInternalButton}
+          />
         ))}
       </Form>
     );
