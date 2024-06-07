@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, useEffect } from "react";
+import type { Dispatch, SetStateAction } from "react";
 import { z } from "zod";
 
 import { trpc } from "@calcom/trpc";
@@ -18,6 +19,8 @@ const AuditLogCredentialContext = createContext<
         value: string;
         key: string;
       }[];
+      sudoKey: string | undefined;
+      setSudoKey: Dispatch<SetStateAction<string | undefined>>;
     }
   | undefined
 >(undefined);
@@ -71,6 +74,8 @@ export const AuditLogCredentialProvider = ({
     }
   }, [isLoading, data]);
 
+  const [sudoKey, setSudoKey] = useState<string | undefined>();
+
   return (
     <AuditLogCredentialContext.Provider
       value={{
@@ -79,6 +84,8 @@ export const AuditLogCredentialProvider = ({
         isLoading,
         credentialId,
         options,
+        sudoKey,
+        setSudoKey,
       }}>
       {children}
     </AuditLogCredentialContext.Provider>
