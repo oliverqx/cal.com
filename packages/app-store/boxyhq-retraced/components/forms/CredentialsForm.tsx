@@ -16,7 +16,7 @@ export const ZBoxyCredentialsFormInput = z.object({
 
 export type BoxyCredentialsForm = z.infer<typeof ZBoxyCredentialsFormInput>;
 
-export const CredentialsFormWrapper = () => {
+export const CredentialsForm = () => {
   const { credentialData, options } = useAppCredential();
   const { t } = useLocale();
 
