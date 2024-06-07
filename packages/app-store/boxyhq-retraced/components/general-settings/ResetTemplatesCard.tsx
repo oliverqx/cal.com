@@ -7,11 +7,10 @@ import z from "zod";
 
 import { Button, showToast } from "@calcom/ui";
 
-import appConfig from "../config.json";
-import { useAppCredential } from "../context/CredentialContext";
-import type { ResetSettingsOption } from "../lib/utils";
-import { AdminKeyForm } from "./AdminKeyForm";
-import PreAdminActionDialog from "./PreAdminActionDialog";
+import appConfig from "../../config.json";
+import { useAppCredential } from "../../context/CredentialContext";
+import type { ResetSettingsOption } from "../../lib/utils";
+import PreAdminActionDialog from "../PreAdminActionDialog";
 
 export const ResetTemplatesCard = ({ option }: { option: ResetSettingsOption }) => {
   const [animationRef] = useAutoAnimate<HTMLDivElement>();
@@ -64,7 +63,8 @@ export const ResetTemplatesCard = ({ option }: { option: ResetSettingsOption }) 
             Confirm
           </Button>
         }>
-        <AdminKeyForm form={form} />
+        {/* <AdminKeyForm form={form} /> */}
+        <h1>hey</h1>
       </PreAdminActionDialog>
       <div className="border-subtle flex items-center justify-between rounded-md border">
         <div className="p-4 sm:p-4">

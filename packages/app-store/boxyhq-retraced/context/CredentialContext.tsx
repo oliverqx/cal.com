@@ -1,20 +1,18 @@
-import { zodResolver } from "@hookform/resolvers/zod";
 import { createContext, useContext, useState, useEffect } from "react";
-import type { UseFormReturn } from "react-hook-form";
-import { useForm } from "react-hook-form";
 import { z } from "zod";
 
 import { trpc } from "@calcom/trpc";
 
-import type { AppSettingsForm, ClientSafeAppCredential } from "../zod";
-import { appKeysSchema, boxyHqEnvironmentSchema, getClientSafeAppCredential } from "../zod";
+import type { BoxyCredentialsForm } from "../components/forms/CredentialsForm";
+import type { ClientSafeAppCredential } from "../zod";
+import { boxyHqEnvironmentSchema, getClientSafeAppCredential } from "../zod";
 
 const AuditLogCredentialContext = createContext<
   | {
       data: ClientSafeAppCredential | undefined;
+      credentialData: BoxyCredentialsForm | undefined;
       isLoading: boolean;
       credentialId: number;
-      form: UseFormReturn<AppSettingsForm, any>;
       options: {
         label: string;
         value: string;
@@ -37,18 +35,13 @@ export const AuditLogCredentialProvider = ({
   credentialId: number;
   children: React.ReactNode;
 }) => {
-  // This holds form for app settings
-  const form = useForm<AppSettingsForm>({
-    resolver: zodResolver(appKeysSchema),
-  });
-
   // This holds credential data.
   const { data, isLoading }: { data: ClientSafeAppCredential | undefined; isLoading: boolean } =
     trpc.viewer.appCredentialById.useQuery({
       id: credentialId,
     });
 
-  // This holds all ailable environment options
+  // This holds all available environment options
   const [options, setOptions] = useState<{ label: string; value: string; key: string }[]>([
     {
       label: "none",
@@ -56,6 +49,8 @@ export const AuditLogCredentialProvider = ({
       key: "none",
     },
   ]);
+
+  const [credentialData, setCredentialData] = useState<BoxyCredentialsForm>();
 
   // This is processing necessary credential data once its been received
   useEffect(() => {
@@ -67,22 +62,22 @@ export const AuditLogCredentialProvider = ({
 
       const parsedEnvironment = boxyEnvironmentTransformer.parse(environments);
 
-      form.reset({
+      setCredentialData({
         activeEnvironment: parsedEnvironment[activeEnvironmentId],
         projectName,
         endpoint,
       });
       setOptions(Object.values(parsedEnvironment));
     }
-  }, [isLoading]);
+  }, [isLoading, data]);
 
   return (
     <AuditLogCredentialContext.Provider
       value={{
         data,
+        credentialData,
         isLoading,
         credentialId,
-        form,
         options,
       }}>
       {children}

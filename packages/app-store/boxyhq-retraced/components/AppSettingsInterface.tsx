@@ -4,12 +4,12 @@ import { DefaultAppSettingsOptions } from "@calcom/features/audit-logs/types";
 
 import { useAppCredential, AuditLogCredentialProvider } from "../context/CredentialContext";
 import { BoxyAppSettingsOptions } from "../lib/utils";
-import { AuditLogEventToggles } from "./AuditLogEventToggles";
 import { AuditLogViewer } from "./AuditLogViewer";
 import { AuditSystemStatus } from "./AuditSystemStatus";
-import { CredentialsFormWrapper } from "./CredentialsFormWrapper";
-import { GeneralSettings } from "./GeneralSettings";
 import { NavigationPanel } from "./NavigationPanel";
+import { AuditLogEventToggles } from "./event-settings/AuditLogEventToggles";
+import { CredentialsFormWrapper } from "./forms/CredentialsForm";
+import { GeneralSettings } from "./general-settings/GeneralSettings";
 
 export default function AppSettings(props: { credentialId: number }) {
   return (

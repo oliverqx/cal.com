@@ -15,8 +15,8 @@ import { Switch, Select, Icon, Button } from "@calcom/ui";
 import { showToast } from "@calcom/ui";
 import { Form, InputField } from "@calcom/ui";
 
-import appConfig from "../config.json";
-import { useAppCredential } from "../context/CredentialContext";
+import appConfig from "../../config.json";
+import { useAppCredential } from "../../context/CredentialContext";
 import ManagedAuditLogEventDialog from "./ManagedAuditLogEventDialog";
 
 export const AuditLogEventToggles = () => {

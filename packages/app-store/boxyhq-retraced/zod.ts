@@ -15,14 +15,6 @@ export const boxyHqEnvironmentSchema = z.object({
   token: z.string(),
 });
 
-export const ZBoxyProjectCreationInput = z.object({
-  sudoKey: z.string(),
-  boxyHqEndpoint: z.string(),
-  projectName: z.string(),
-});
-
-export type BoxyProjectCreationInput = z.infer<typeof ZBoxyProjectCreationInput>;
-
 export const appDataSchema = z.object({});
 
 export const appSettingsSchema = z.object({
@@ -42,10 +34,3 @@ export const getClientSafeAppCredential = Credential.extend({
   }),
 });
 export type ClientSafeAppCredential = z.infer<typeof getClientSafeAppCredential>;
-
-export const appSettingsFormSchema = z.object({
-  activeEnvironment: z.object({ key: z.string(), label: z.string(), value: z.string() }),
-  projectName: z.string(),
-  endpoint: z.string(),
-});
-export type AppSettingsForm = z.infer<typeof appSettingsFormSchema>;

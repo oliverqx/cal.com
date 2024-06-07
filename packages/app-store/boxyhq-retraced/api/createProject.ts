@@ -9,7 +9,8 @@ import appConfig from "../config.json";
 import type { BoxyHqProject } from "../lib/boxysdk";
 import { boxyHQAuthenticate, boxyHqCreateTemplates, createProject } from "../lib/boxysdk";
 import { AuditLogDefaultTemplates } from "../lib/constants";
-import { ZBoxyProjectCreationInput, getClientSafeAppCredential } from "../zod";
+import { ZBoxyProjectCreationInput } from "../pages/setup";
+import { getClientSafeAppCredential } from "../zod";
 
 export async function handler(req: NextApiRequest, res: NextApiResponse) {
   const session = req.session;

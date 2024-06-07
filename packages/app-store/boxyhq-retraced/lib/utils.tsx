@@ -7,7 +7,7 @@ import type { DefaultAppSettingOptionEntry } from "@calcom/features/audit-logs/t
 import { getHref } from "@calcom/features/audit-logs/utils";
 import type { IconName } from "@calcom/ui";
 
-import { ResetTemplatesCard } from "../components/ResetTemplatesCard";
+import { ResetTemplatesCard } from "../components/general-settings/ResetTemplatesCard";
 
 type BoxyAppSettingsOptionsEntry = {
   key: DefaultAppSettingOptionEntry | BoxyAppSettingsOptions;
