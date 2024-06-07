@@ -9,7 +9,7 @@ import { EventSettingsInterface } from "./EventSettingsInterface";
 
 const ZAdminKeyForm = z.object({ sudoKey: z.string() });
 
-export function EventSettings() {
+export function EventSettingsGuard() {
   const { setSudoKey, sudoKey } = useAppCredential();
 
   const projectUpdateFormFields = [

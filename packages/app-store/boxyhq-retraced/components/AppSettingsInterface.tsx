@@ -7,8 +7,8 @@ import { BoxyAppSettingsOptions } from "../lib/utils";
 import { AuditLogViewer } from "./AuditLogViewer";
 import { AuditSystemStatus } from "./AuditSystemStatus";
 import { NavigationPanel } from "./NavigationPanel";
-import { AuditLogEventToggles } from "./event-settings/AuditLogEventToggles";
-import { CredentialsFormWrapper } from "./forms/CredentialsForm";
+import { EventSettingsGuard } from "./event-settings/EventSettingsGuard";
+import { CredentialsForm } from "./forms/CredentialsForm";
 import { GeneralSettings } from "./general-settings/GeneralSettings";
 
 export default function AppSettings(props: { credentialId: number }) {
@@ -42,7 +42,7 @@ function Interface() {
 function renderPanel(activePanel: string | null) {
   switch (activePanel) {
     case DefaultAppSettingsOptions.TRIGGERS: {
-      return <AuditLogEventToggles />;
+      return <EventSettingsGuard />;
     }
 
     case DefaultAppSettingsOptions.GENERAL: {
@@ -55,6 +55,6 @@ function renderPanel(activePanel: string | null) {
 
     // DefaultAppSettingsOptions.CREDENTIALS
     default:
-      return <CredentialsFormWrapper />;
+      return <CredentialsForm />;
   }
 }
