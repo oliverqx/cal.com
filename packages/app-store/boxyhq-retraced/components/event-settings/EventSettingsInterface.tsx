@@ -1,5 +1,5 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import type { Dispatch } from "react";
 import { useState, Fragment, useEffect } from "react";
 import { Controller } from "react-hook-form";
@@ -19,7 +19,7 @@ import appConfig from "../../config.json";
 import { useAppCredential } from "../../context/CredentialContext";
 import ManagedAuditLogEventDialog from "./ManagedAuditLogEventDialog";
 
-export const EventSettingsInterface = () => {
+export const EventSettingsInterface = ({ templates }: { templates: Map<string, BoxyTemplate> }) => {
   const { t } = useLocale();
 
   const { data, credentialId, sudoKey } = useAppCredential();
@@ -76,37 +76,6 @@ export const EventSettingsInterface = () => {
 
   // Template editing related
   const [activeTemplate, setActiveTemplate] = useState<undefined | string>(undefined);
-
-  const { data: templates } = useQuery({
-    queryKey: ["getTemplates", credentialId.toString()],
-    queryFn: async () => {
-      const response = await fetch(`/api/integrations/${appConfig.slug}/getTemplates`, {
-        method: "post",
-        headers: { "Content-type": "application/json" },
-        body: JSON.stringify({
-          credentialId,
-          sudoKey,
-        }),
-      });
-
-      const body = await response.json();
-
-      const templates = body.message.templates;
-
-      const templateMap: Map<string, BoxyTemplate> = new Map();
-      templates.map((template: BoxyTemplate) => templateMap.set(template.name, template));
-
-      if (response.status === 200) {
-        showToast("Templates retrieved successfully.", "success");
-      } else {
-        showToast("Templates retrieval failed. Please ensure your credentials are valid.", "error");
-      }
-
-      return templateMap;
-    },
-    refetchOnMount: false,
-    refetchOnWindowFocus: false,
-  });
 
   const form = useForm<{ template: string }>({
     resolver: zodResolver(z.object({ template: z.string() })),
@@ -210,7 +179,7 @@ export const EventSettingsInterface = () => {
   );
 };
 
-type BoxyTemplate = {
+export type BoxyTemplate = {
   project_id: string;
   environment_id: string;
   id: string;
