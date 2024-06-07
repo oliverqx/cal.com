@@ -8,7 +8,7 @@ import { AuditLogViewer } from "./AuditLogViewer";
 import { AuditSystemStatus } from "./AuditSystemStatus";
 import { NavigationPanel } from "./NavigationPanel";
 import { EventSettingsGuard } from "./event-settings/EventSettingsGuard";
-import { AppKeyForm } from "./forms/C./forms/AppKeyForm";
+import { AppKeyForm } from "./forms/AppKeyForm";
 import { GeneralSettings } from "./general-settings/GeneralSettings";
 
 export default function AppSettings(props: { credentialId: number }) {
