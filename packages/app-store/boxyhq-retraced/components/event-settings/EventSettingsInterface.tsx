@@ -19,10 +19,10 @@ import appConfig from "../../config.json";
 import { useAppCredential } from "../../context/CredentialContext";
 import ManagedAuditLogEventDialog from "./ManagedAuditLogEventDialog";
 
-export const AuditLogEventToggles = () => {
+export const EventSettingsInterface = () => {
   const { t } = useLocale();
 
-  const { data, credentialId } = useAppCredential();
+  const { data, credentialId, sudoKey } = useAppCredential();
 
   // Select related
   const [value, setValue] = useState<{ label: string; value: AuditLogTriggerTargets; key: string }>(
@@ -77,7 +77,7 @@ export const AuditLogEventToggles = () => {
   // Template editing related
   const [activeTemplate, setActiveTemplate] = useState<undefined | string>(undefined);
 
-  const { data: status } = useQuery({
+  const { data: templates } = useQuery({
     queryKey: ["getTemplates", credentialId.toString()],
     queryFn: async () => {
       const response = await fetch(`/api/integrations/${appConfig.slug}/getTemplates`, {
@@ -85,7 +85,7 @@ export const AuditLogEventToggles = () => {
         headers: { "Content-type": "application/json" },
         body: JSON.stringify({
           credentialId,
-          sudoKey: "dev",
+          sudoKey,
         }),
       });
 
@@ -114,9 +114,9 @@ export const AuditLogEventToggles = () => {
 
   useEffect(() => {
     if (activeTemplate) {
-      form.reset({ template: status?.get(activeTemplate)?.template });
+      form.reset({ template: templates?.get(activeTemplate)?.template });
     }
-  }, [status, activeTemplate, form]);
+  }, [templates, activeTemplate, form]);
 
   const queryClient = useQueryClient();
 
@@ -128,9 +128,9 @@ export const AuditLogEventToggles = () => {
         headers: { "Content-type": "application/json" },
         body: JSON.stringify({
           projectId: data.key.projectId,
-          templateId: status?.get(activeTemplate)?.id,
+          templateId: templates?.get(activeTemplate)?.id,
           environmentId: data.key.activeEnvironment,
-          sudoKey: "dev",
+          sudoKey,
           endpoint: data.key.endpoint,
           newTemplate: template,
           eventTriggerToMatch: activeTemplate,
@@ -183,14 +183,10 @@ export const AuditLogEventToggles = () => {
           onChange={(e) => onChange(e?.key)}
         />
 
-        <ul className="border-subtle divide-subtle my-4 h-[350px] divide-y overflow-scroll rounded-md border">
-          {typeof status !== undefined && status
+        <ul className="border-subtle divide-subtle my-4 h-[350px] divide-y overflow-scroll rounded-md border p-0">
+          {typeof templates !== undefined && templates
             ? Object.values(availableTriggerEvents[value.key]).map(
                 (triggerEvent: AvailableTriggerEventsType, key) => {
-                  if (!status) {
-                    return null;
-                  }
-
                   return (
                     <Fragment key={key}>
                       <EventSettings
