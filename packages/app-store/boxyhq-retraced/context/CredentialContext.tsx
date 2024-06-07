@@ -1,10 +1,14 @@
+import { useQuery } from "@tanstack/react-query";
 import { createContext, useContext, useState, useEffect } from "react";
 import type { Dispatch, SetStateAction } from "react";
 import { z } from "zod";
 
 import { trpc } from "@calcom/trpc";
+import { showToast } from "@calcom/ui";
 
+import type { BoxyTemplate } from "../components/event-settings/EventSettingsInterface";
 import type { BoxyCredentialsForm } from "../components/forms/CredentialsForm";
+import appConfig from "../config.json";
 import type { ClientSafeAppCredential } from "../zod";
 import { boxyHqEnvironmentSchema, getClientSafeAppCredential } from "../zod";
 
@@ -21,6 +25,8 @@ const AuditLogCredentialContext = createContext<
       }[];
       sudoKey: string | undefined;
       setSudoKey: Dispatch<SetStateAction<string | undefined>>;
+      isFetchingTemplates: boolean;
+      templates: Map<string, BoxyTemplate> | undefined;
     }
   | undefined
 >(undefined);
@@ -76,6 +82,38 @@ export const AuditLogCredentialProvider = ({
 
   const [sudoKey, setSudoKey] = useState<string | undefined>();
 
+  const { data: templates, isLoading: isFetchingTemplates } = useQuery({
+    queryKey: ["getTemplates", credentialId.toString()],
+    queryFn: async () => {
+      const response = await fetch(`/api/integrations/${appConfig.slug}/getTemplates`, {
+        method: "post",
+        headers: { "Content-type": "application/json" },
+        body: JSON.stringify({
+          credentialId,
+          sudoKey,
+        }),
+      });
+
+      const body = await response.json();
+
+      const templates = body.message.templates;
+
+      const templateMap: Map<string, BoxyTemplate> = new Map();
+      templates.map((template: BoxyTemplate) => templateMap.set(template.name, template));
+
+      if (response.status === 200) {
+        showToast("Templates retrieved successfully.", "success");
+      } else {
+        showToast("Templates retrieval failed. Please ensure your credentials are valid.", "error");
+      }
+
+      return templateMap;
+    },
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
+    enabled: !!sudoKey,
+  });
+
   return (
     <AuditLogCredentialContext.Provider
       value={{
@@ -86,6 +124,8 @@ export const AuditLogCredentialProvider = ({
         options,
         sudoKey,
         setSudoKey,
+        templates,
+        isFetchingTemplates,
       }}>
       {children}
     </AuditLogCredentialContext.Provider>

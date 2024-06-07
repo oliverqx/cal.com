@@ -1,20 +1,16 @@
-import { useQuery } from "@tanstack/react-query";
 import { useRef } from "react";
 import { z } from "zod";
 
 import { Button } from "@calcom/ui";
-import { showToast } from "@calcom/ui";
 
-import appConfig from "../../config.json";
 import { useAppCredential } from "../../context/CredentialContext";
 import { FormRenderer } from "../forms/FormRenderer";
-import type { BoxyTemplate } from "./EventSettingsInterface";
 import { EventSettingsInterface } from "./EventSettingsInterface";
 
 const ZAdminKeyForm = z.object({ sudoKey: z.string() });
 
 export function EventSettingsGuard() {
-  const { setSudoKey, sudoKey, credentialId } = useAppCredential();
+  const { setSudoKey, sudoKey, templates, isFetchingTemplates } = useAppCredential();
 
   const projectUpdateFormFields = [
     {
@@ -24,38 +20,6 @@ export function EventSettingsGuard() {
     },
   ];
   const refForm = useRef<any | null>(null);
-
-  const { data: templates, isLoading: isFetchingTemplates } = useQuery({
-    queryKey: ["getTemplates", credentialId.toString()],
-    queryFn: async () => {
-      const response = await fetch(`/api/integrations/${appConfig.slug}/getTemplates`, {
-        method: "post",
-        headers: { "Content-type": "application/json" },
-        body: JSON.stringify({
-          credentialId,
-          sudoKey,
-        }),
-      });
-
-      const body = await response.json();
-
-      const templates = body.message.templates;
-
-      const templateMap: Map<string, BoxyTemplate> = new Map();
-      templates.map((template: BoxyTemplate) => templateMap.set(template.name, template));
-
-      if (response.status === 200) {
-        showToast("Templates retrieved successfully.", "success");
-      } else {
-        showToast("Templates retrieval failed. Please ensure your credentials are valid.", "error");
-      }
-
-      return templateMap;
-    },
-    refetchOnMount: false,
-    refetchOnWindowFocus: false,
-    enabled: !!sudoKey,
-  });
 
   if (!sudoKey || !templates)
     return (
