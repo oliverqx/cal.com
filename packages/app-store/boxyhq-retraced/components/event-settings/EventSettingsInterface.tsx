@@ -1,7 +1,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import type { Dispatch } from "react";
-import { useState, Fragment, useEffect } from "react";
+import { useState, Fragment } from "react";
 import { Controller } from "react-hook-form";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -24,7 +24,7 @@ export const EventSettingsInterface = ({ templates }: { templates: Map<string, B
 
   const { data, credentialId, sudoKey } = useAppCredential();
 
-  // Select related
+  // Select. In charge of filtering event reports by target.
   const [value, setValue] = useState<{ label: string; value: AuditLogTriggerTargets; key: string }>(
     availableTriggerTargets.booking
   );
@@ -39,8 +39,8 @@ export const EventSettingsInterface = ({ templates }: { templates: Map<string, B
 
   // Toggle related
   const [triggerEvent, setTriggerEvent] = useState({ checked: true, action: "" });
-  const [disabledEvents, setDisabledEvents] = useState<Set<string>>(new Set(data?.settings.disabledEvents));
-  const updateCredentialSettingsMutation = trpc.viewer.appsRouter.updateCredentialSettings.useMutation({
+  const [disabledEvents, setDisabledEvents] = useState<Set<string>>(new Set(data?.key.disabledEvents));
+  const { mutate: updateAppKey } = trpc.viewer.appsRouter.updateAppCredentials.useMutation({
     onSuccess: () => {
       showToast(t("keys_have_been_saved"), "success");
     },
@@ -59,36 +59,29 @@ export const EventSettingsInterface = ({ templates }: { templates: Map<string, B
     setOpen((isOpen) => !isOpen);
   }
   async function handleOnConfirm() {
-    updateCredentialSettingsMutation.mutate({
-      credentialId: credentialId.toString(),
-      settings: { toBeDisabled: !triggerEvent.checked, event: triggerEvent.action },
-    });
-
     const newDisabledEvents = disabledEvents;
     if (!triggerEvent.checked) {
       newDisabledEvents.add(triggerEvent.action);
-      setDisabledEvents(newDisabledEvents);
     } else {
       newDisabledEvents.delete(triggerEvent.action);
-      setDisabledEvents(newDisabledEvents);
     }
+
+    updateAppKey({
+      credentialId,
+      key: {
+        disabledEvents: Array.from(newDisabledEvents),
+      },
+    });
+    setDisabledEvents(newDisabledEvents);
   }
 
   // Template editing related
   const [activeTemplate, setActiveTemplate] = useState<undefined | string>(undefined);
-
   const form = useForm<{ template: string }>({
     resolver: zodResolver(z.object({ template: z.string() })),
   });
 
-  useEffect(() => {
-    if (activeTemplate) {
-      form.reset({ template: templates?.get(activeTemplate)?.template });
-    }
-  }, [templates, activeTemplate, form]);
-
   const queryClient = useQueryClient();
-
   const { mutate: updateTemplateMutation, isPending } = useMutation({
     mutationFn: async ({ template }: { template: string }) => {
       if (!activeTemplate || !data) return;
@@ -129,6 +122,7 @@ export const EventSettingsInterface = ({ templates }: { templates: Map<string, B
 
   function setFormValue(triggerEvent: string) {
     setActiveTemplate(triggerEvent);
+    form.reset({ template: templates?.get(triggerEvent)?.template });
   }
 
   function submitUpdateTemplate() {
