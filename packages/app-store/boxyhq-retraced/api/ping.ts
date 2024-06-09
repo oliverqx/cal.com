@@ -7,7 +7,7 @@ import { defaultResponder } from "@calcom/lib/server";
 import prisma from "@calcom/prisma";
 
 import AuditLogManager from "../lib/AuditLogManager";
-import { appKeysSchema, appSettingsSchema } from "../zod";
+import { appKeysSchema } from "../zod";
 
 const pingEvent: Retraced.Event = {
   action: "SYSTEM_PING",
@@ -42,8 +42,7 @@ export async function handler(req: NextApiRequest, res: NextApiResponse) {
   });
 
   const appKeys = appKeysSchema.parse(data?.key);
-  const appSettings = appSettingsSchema.parse(data?.settings);
-  const auditLogManager = new AuditLogManager(appKeys, appSettings);
+  const auditLogManager = new AuditLogManager(appKeys);
 
   try {
     await auditLogManager.reportEvent(pingEvent);

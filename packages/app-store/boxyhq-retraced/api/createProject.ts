@@ -55,8 +55,6 @@ export async function handler(req: NextApiRequest, res: NextApiResponse) {
         activeEnvironment: Object.values(boxyHqMetadata.environments)[0].id,
         projectId: boxyHqMetadata.projectId,
         endpoint: boxyHqEndpoint,
-      },
-      settings: {
         disabledEvents: [],
         projectName: boxyHqMetadata.name,
         environments: boxyHqMetadata.environments,

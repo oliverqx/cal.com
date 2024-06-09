@@ -17,7 +17,7 @@ export const ZBoxyAppKeyFormInput = z.object({
 export type BoxyAppKeyForm = z.infer<typeof ZBoxyAppKeyFormInput>;
 
 export const AppKeyForm = () => {
-  const { appKey, options, credentialId, environments } = useAppCredential();
+  const { appKey, data, options, credentialId, environments } = useAppCredential();
   const { t } = useLocale();
 
   const refForm = useRef<any | null>(null);
@@ -53,7 +53,10 @@ export const AppKeyForm = () => {
     if (!environments) return;
     updateAppKey({
       credentialId,
-      key: { ...values, activeEnvironment: environments[values.activeEnvironment.value].id },
+      key: {
+        ...values,
+        activeEnvironment: environments[values.activeEnvironment.value].id,
+      },
     });
   }
 

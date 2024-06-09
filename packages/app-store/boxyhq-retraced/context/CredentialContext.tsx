@@ -67,8 +67,7 @@ export const AuditLogCredentialProvider = ({
   useEffect(() => {
     if (isLoading === false && data) {
       const {
-        key: { activeEnvironment: activeEnvironmentId, endpoint },
-        settings: { projectName, environments },
+        key: { activeEnvironment: activeEnvironmentId, endpoint, projectName, environments },
       } = getClientSafeAppCredential.parse(data);
 
       const parsedEnvironment = boxyEnvironmentTransformer.parse(environments);
