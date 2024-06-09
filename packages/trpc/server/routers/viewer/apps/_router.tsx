@@ -9,7 +9,6 @@ import { ZQueryForDependenciesInputSchema } from "./queryForDependencies.schema"
 import { ZSaveKeysInputSchema } from "./saveKeys.schema";
 import { ZToggleInputSchema } from "./toggle.schema";
 import { ZUpdateAppCredentialsInputSchema } from "./updateAppCredentials.schema";
-import { ZUpdateCredentialSettingsInputSchema } from "./updateCredentialSettings.schema";
 
 type AppsRouterHandlerCache = {
   listLocal?: typeof import("./listLocal.handler").listLocalHandler;
@@ -107,26 +106,6 @@ export const appsRouter = router({
       }
 
       return UNSTABLE_HANDLER_CACHE.updateAppCredentials({
-        ctx,
-        input,
-      });
-    }),
-
-  updateCredentialSettings: authedProcedure
-    .input(ZUpdateCredentialSettingsInputSchema)
-    .mutation(async ({ ctx, input }) => {
-      if (!UNSTABLE_HANDLER_CACHE.updateCredentialSettings) {
-        UNSTABLE_HANDLER_CACHE.updateCredentialSettings = await import(
-          "./updateCredentialSettings.handler"
-        ).then((mod) => mod.updateCredentialSettingsHandler);
-      }
-
-      // Unreachable code but required for type safety
-      if (!UNSTABLE_HANDLER_CACHE.updateCredentialSettings) {
-        throw new Error("Failed to load handler");
-      }
-
-      return UNSTABLE_HANDLER_CACHE.updateCredentialSettings({
         ctx,
         input,
       });
