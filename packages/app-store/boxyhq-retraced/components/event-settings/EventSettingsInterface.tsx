@@ -154,24 +154,22 @@ export const EventSettingsInterface = ({ templates }: { templates: Map<string, B
 
         <ul className="border-subtle divide-subtle my-4 h-[350px] divide-y overflow-scroll rounded-md border p-0">
           {typeof templates !== undefined && templates
-            ? Object.values(availableTriggerEvents[value.key]).map(
-                (triggerEvent: AvailableTriggerEventsType, key) => {
-                  return (
-                    <Fragment key={key}>
-                      <EventSettings
-                        isLoading={isPending}
-                        setFormValue={setFormValue}
-                        triggerEvent={triggerEvent}
-                        disabled={disabledEvents.has(triggerEvent)}
-                        handleEventToggle={handleEventToggle}
-                        activeTemplate={activeTemplate}
-                        form={form}
-                        submitUpdateTemplate={submitUpdateTemplate}
-                      />
-                    </Fragment>
-                  );
-                }
-              )
+            ? Object.values(availableTriggerEvents[value.key]).map((triggerEvent, key) => {
+                return (
+                  <Fragment key={key}>
+                    <EventSettings
+                      isLoading={isPending}
+                      setFormValue={setFormValue}
+                      triggerEvent={triggerEvent}
+                      disabled={disabledEvents.has(triggerEvent)}
+                      handleEventToggle={handleEventToggle}
+                      activeTemplate={activeTemplate}
+                      form={form}
+                      submitUpdateTemplate={submitUpdateTemplate}
+                    />
+                  </Fragment>
+                );
+              })
             : null}
         </ul>
       </div>

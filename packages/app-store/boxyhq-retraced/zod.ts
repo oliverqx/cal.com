@@ -7,6 +7,7 @@ export const boxyHqEnvironmentSchema = z.object({
   name: z.string(),
   token: z.string(),
 });
+export type BoxyEnvironmentSchema = z.infer<typeof boxyHqEnvironmentSchema>;
 
 export const appDataSchema = z.object({});
 
