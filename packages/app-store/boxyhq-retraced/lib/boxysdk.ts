@@ -96,6 +96,38 @@ export function boxyHqCreateTemplates({
   );
 }
 
+export function boxyHqCreateTemplate({
+  boxyAdminKey,
+  projectId,
+  endpoint,
+  environmentId,
+  template,
+}: {
+  boxyAdminKey: string;
+  projectId: string;
+  endpoint: string;
+  environmentId: string;
+  template: BoxyHQTemplate;
+}) {
+  const headers = new Headers();
+  headers.append("Authorization", boxyAdminKey);
+  headers.append("Content-Type", "application/json");
+
+  const body = JSON.stringify({ ...template });
+
+  const requestOptions = {
+    method: "POST",
+    headers,
+    body,
+    redirect: "follow" as const,
+  };
+
+  return fetch(
+    `${endpoint}/admin/v1/project/${projectId}/template?environment_id=${environmentId}`,
+    requestOptions
+  );
+}
+
 export function getBoxyTemplates(
   boxyAdminKey: string,
   projectId: string,
