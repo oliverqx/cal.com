@@ -1,7 +1,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import type { Dispatch } from "react";
-import { useState, Fragment } from "react";
+import { useState, Fragment, useEffect } from "react";
 import { Controller } from "react-hook-form";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -90,7 +90,7 @@ export const EventSettingsInterface = ({ templates }: { templates: Map<string, B
         headers: { "Content-type": "application/json" },
         body: JSON.stringify({
           projectId: data.key.projectId,
-          templateId: templates?.get(activeTemplate)?.id,
+          template: templates?.get(activeTemplate),
           environmentId: data.key.activeEnvironment,
           sudoKey,
           endpoint: data.key.endpoint,
@@ -120,9 +120,14 @@ export const EventSettingsInterface = ({ templates }: { templates: Map<string, B
     },
   });
 
+  useEffect(() => {
+    if (activeTemplate) {
+      form.reset({ template: templates?.get(activeTemplate)?.template });
+    }
+  }, [templates, activeTemplate, form]);
+
   function setFormValue(triggerEvent: string) {
     setActiveTemplate(triggerEvent);
-    form.reset({ template: templates?.get(triggerEvent)?.template });
   }
 
   function submitUpdateTemplate() {
@@ -171,16 +176,18 @@ export const EventSettingsInterface = ({ templates }: { templates: Map<string, B
   );
 };
 
-export type BoxyTemplate = {
-  project_id: string;
-  environment_id: string;
-  id: string;
-  name: string;
-  rule: string;
-  template: string | undefined;
-  created_at: string;
-  updated_at: string | null;
-};
+export const ZBoxyTemplate = z.object({
+  project_id: z.string(),
+  environment_id: z.string(),
+  id: z.string(),
+  name: z.string(),
+  rule: z.string(),
+  template: z.string().optional(),
+  created_at: z.string(),
+  updated_at: z.string().nullable(),
+});
+
+export type BoxyTemplate = z.infer<typeof ZBoxyTemplate>;
 
 function EventSettings({
   triggerEvent,
