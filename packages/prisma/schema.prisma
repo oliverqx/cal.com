@@ -171,8 +171,6 @@ model Credential {
   selectedCalendars    SelectedCalendar[]
   invalid              Boolean?              @default(false)
   CalendarCache        CalendarCache[]
-  /// Note: settings type depends on implementation/slug this credential belongs to.
-  settings             Json                  @default("{ \"empty\": \"true\" }")
 
   @@index([userId])
   @@index([appId])
@@ -239,7 +237,6 @@ model User {
   emailVerified       DateTime?
   password            UserPassword?
   bio                 String?
-  avatar              String?
   avatarUrl           String?
   timeZone            String               @default("Europe/London")
   travelSchedules     TravelSchedule[]
@@ -277,7 +274,6 @@ model User {
   darkBrandColor      String?
   // the location where the events will end up
   destinationCalendar DestinationCalendar?
-  away                Boolean              @default(false)
   // participate in dynamic group booking or not
   allowDynamicBooking Boolean?             @default(true)
 
@@ -363,7 +359,6 @@ model Team {
   name                  String
   /// @zod.min(1)
   slug                  String?
-  logo                  String?
   logoUrl               String?
   calVideoLogo          String?
   appLogo               String?
@@ -514,6 +509,7 @@ model Attendee {
   booking     Booking?     @relation(fields: [bookingId], references: [id], onDelete: Cascade)
   bookingId   Int?
   bookingSeat BookingSeat?
+  noShow      Boolean?     @default(false)
 
   @@index([email])
   @@index([bookingId])
@@ -716,9 +712,13 @@ enum AuditLogBookingTriggerEvents {
 enum AuditLogSystemTriggerEvents {
   SYSTEM_PING
   SYSTEM_CREDENTIALS_UPDATED
-  SYSTEM_TEMPLATE_UPDATED
   SYSTEM_EVENT_OFF
   SYSTEM_EVENT_ON
+  SYSTEM_MISC
+}
+
+enum AuditLogAppTriggerEvents {
+  APP_KEYS_UPDATED
 }
 
 enum AuditLogTriggerTargets {
