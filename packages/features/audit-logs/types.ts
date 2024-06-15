@@ -62,7 +62,7 @@ export interface GeneralSettingsOption {
 }
 
 export type GenericAuditLogClient = {
-  credentials: AppKeys;
+  credentials: AppKeys & AppSettings;
   reportEvent: (event: AuditLogEvent) => void;
 };
 

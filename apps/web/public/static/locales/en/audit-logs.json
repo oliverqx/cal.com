@@ -40,8 +40,15 @@
   "tooltipInformationDisabled": "Enable",
   "managed_auditLog_event_dialog_title": "You're disabling an audit logging event.",
   "managed_auditLog_event_dialog_confirm_button": "Confirm",
+  "admin_action_auditLog_dialog_title": "You're executing an admin action at BoxyHQ.",
   "go_back": "Cancel",
   "settings_have_been_updated": "Settings have been successfully updated.",
   "credentials": "Credentials",
-  "triggers": "Trigger Events"
+  "triggers": "Trigger Events",
+  "auditlog_credentials_title": "BoxyHQ - Setup Credentials",
+  "auditlog_credentials_description": "Please provide all information below so Cal.com can connect to your Retraced project.",
+  "create_auditlog_templates": "BoxyHQ - Template Creation",
+  "create_templates_description": "We're creating a set of default templates for all availble events. This might take a minute.",
+  "confirm_credentials_title": "BoxyHQ - Confirm Credentials",
+  "confirm_credentials_description": "This information will be used to report event to BoxyHQ Retraced. Please confirm everything is correct."
 }

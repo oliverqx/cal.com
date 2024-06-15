@@ -28,6 +28,7 @@ type InstallationArgs = {
   subscriptionId?: string | null;
   paymentStatus?: string | null;
   billingCycleStart?: number | null;
+  settings?: Prisma.InputJsonValue;
 };
 
 export async function createDefaultInstallation({
@@ -39,6 +40,7 @@ export async function createDefaultInstallation({
   billingCycleStart,
   paymentStatus,
   subscriptionId,
+  settings,
 }: InstallationArgs) {
   const installation = await prisma.credential.create({
     data: {
@@ -49,6 +51,7 @@ export async function createDefaultInstallation({
       subscriptionId,
       paymentStatus,
       billingCycleStart,
+      settings,
     },
   });
   if (!installation) {
